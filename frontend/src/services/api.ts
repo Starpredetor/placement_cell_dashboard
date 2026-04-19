@@ -6,16 +6,20 @@ import axios, {
 } from 'axios';
 
 // API Response Types
+export interface AuthUser {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_active: boolean;
+  role: 'SUPER_ADMIN' | 'TPO' | 'HOD' | 'VOLUNTEER' | 'STUDENT';
+}
+
 export interface LoginResponse {
   access: string;
   refresh: string;
-  user: {
-    id: number;
-    username: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-  };
+  user: AuthUser;
 }
 
 export interface PaginatedResponse<T> {
@@ -97,7 +101,8 @@ export const authAPI = {
   logout: () => api.post('/auth/logout/'),
   refreshToken: (refresh: string) =>
     api.post('/auth/token/refresh/', { refresh }),
-  me: () => api.get('/auth/me/'),
+  me: () => api.get<AuthUser>('/auth/me/'),
+  users: () => api.get<AuthUser[]>('/auth/users/'),
 };
 
 // Students Endpoints

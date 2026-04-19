@@ -1,5 +1,8 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class UserRole(models.TextChoices):
@@ -27,3 +30,14 @@ class UserProfile(models.Model):
 
 	def __str__(self) -> str:
 		return f'{self.user.username} ({self.role})'
+
+
+@receiver(post_save, sender=get_user_model())
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+	if created:
+		profile_role = UserRole.SUPER_ADMIN if instance.is_superuser else UserRole.STUDENT
+		UserProfile.objects.create(user=instance, role=profile_role)
+		return
+
+	# Ensure profile always exists even for legacy users.
+	UserProfile.objects.get_or_create(user=instance)
