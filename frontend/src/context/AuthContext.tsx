@@ -27,10 +27,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       // TODO: Call login API endpoint
-      // const response = await authAPI.login({ email, password });
-      // localStorage.setItem('access_token', response.data.access);
-      // localStorage.setItem('refresh_token', response.data.refresh);
-      // setUser(response.data.user);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;

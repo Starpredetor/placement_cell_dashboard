@@ -1,55 +1,88 @@
-import axios from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosResponse,
+  AxiosError,
+  InternalAxiosRequestConfig,
+} from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-const API_VERSION = process.env.REACT_APP_API_VERSION || 'v1';
+// API Response Types
+export interface LoginResponse {
+  access: string;
+  refresh: string;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+  };
+}
 
-const apiClient = axios.create({
-  baseURL: `${API_URL}/api/${API_VERSION}`,
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+// Create axios instance
+const api: AxiosInstance = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add token to requests
-apiClient.interceptors.request.use(
-  (config) => {
+// Request Interceptor - Add JWT token to headers
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error: AxiosError) => Promise.reject(error)
 );
 
-// Handle token refresh on 401
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+// Response Interceptor - Handle token refresh on 401
+api.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
         const refreshToken = localStorage.getItem('refresh_token');
+        if (!refreshToken) {
+          // No refresh token available, redirect to login
+          localStorage.clear();
+          window.location.href = '/login';
+          return Promise.reject(error);
+        }
+
         const response = await axios.post(
-          `${API_URL}/api/${API_VERSION}/auth/token/refresh/`,
+          `${process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1'}/auth/token/refresh/`,
           { refresh: refreshToken }
         );
 
         const { access } = response.data;
         localStorage.setItem('access_token', access);
 
-        originalRequest.headers.Authorization = `Bearer ${access}`;
-        return apiClient(originalRequest);
-      } catch (err) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+        // Retry original request with new token
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${access}`;
+        }
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed, clear tokens and redirect to login
+        localStorage.clear();
         window.location.href = '/login';
-        return Promise.reject(err);
+        return Promise.reject(refreshError);
       }
     }
 
@@ -57,59 +90,92 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Auth endpoints
+// Auth Endpoints
 export const authAPI = {
-  register: (data: any) => apiClient.post('/auth/register/', data),
-  login: (data: any) => apiClient.post('/auth/login/', data),
-  me: () => apiClient.get('/auth/me/'),
-  changePassword: (data: any) => apiClient.post('/auth/change-password/', data),
+  login: (email: string, password: string) =>
+    api.post<LoginResponse>('/auth/login/', { email, password }),
+  logout: () => api.post('/auth/logout/'),
+  refreshToken: (refresh: string) =>
+    api.post('/auth/token/refresh/', { refresh }),
+  me: () => api.get('/auth/me/'),
 };
 
-// Students endpoints
+// Students Endpoints
 export const studentsAPI = {
-  list: (params?: any) => apiClient.get('/students/', { params }),
-  get: (id: string) => apiClient.get(`/students/${id}/`),
-  create: (data: any) => apiClient.post('/students/', data),
-  update: (id: string, data: any) => apiClient.patch(`/students/${id}/`, data),
-  delete: (id: string) => apiClient.delete(`/students/${id}/`),
+  list: (page = 1) =>
+    api.get<PaginatedResponse<any>>('/students/', { params: { page } }),
+  detail: (id: number) => api.get(`/students/${id}/`),
+  create: (data: any) => api.post('/students/', data),
+  update: (id: number, data: any) => api.put(`/students/${id}/`, data),
+  delete: (id: number) => api.delete(`/students/${id}/`),
 };
 
-// Placements endpoints
+// Placements Endpoints
 export const placementsAPI = {
-  listOpportunities: (params?: any) => apiClient.get('/placements/opportunities/', { params }),
-  getOpportunity: (id: string) => apiClient.get(`/placements/opportunities/${id}/`),
-  createOpportunity: (data: any) => apiClient.post('/placements/opportunities/', data),
-  listApplications: (params?: any) => apiClient.get('/placements/applications/', { params }),
-  applyToOpportunity: (opportunityId: string, data: any) =>
-    apiClient.post(`/placements/opportunities/${opportunityId}/apply/`, data),
+  opportunities: (page = 1) =>
+    api.get<PaginatedResponse<any>>('/placements/opportunities/', {
+      params: { page },
+    }),
+  applications: (page = 1) =>
+    api.get<PaginatedResponse<any>>('/placements/applications/', {
+      params: { page },
+    }),
+  createApplication: (data: any) =>
+    api.post('/placements/applications/', data),
+  updateApplication: (id: number, data: any) =>
+    api.put(`/placements/applications/${id}/`, data),
 };
 
-// Training endpoints
+// Training Endpoints
 export const trainingAPI = {
-  listPrograms: (params?: any) => apiClient.get('/training/programs/', { params }),
-  getProgram: (id: string) => apiClient.get(`/training/programs/${id}/`),
-  listSlots: (params?: any) => apiClient.get('/training/slots/', { params }),
+  programs: (page = 1) =>
+    api.get<PaginatedResponse<any>>('/training/programs/', { params: { page } }),
+  enrollment: (page = 1) =>
+    api.get<PaginatedResponse<any>>('/training/enrollment/', {
+      params: { page },
+    }),
+  createEnrollment: (data: any) =>
+    api.post('/training/enrollment/', data),
 };
 
-// Events endpoints
+// Events Endpoints
 export const eventsAPI = {
-  list: (params?: any) => apiClient.get('/events/', { params }),
-  get: (id: string) => apiClient.get(`/events/${id}/`),
-  enroll: (id: string, data: any) => apiClient.post(`/events/${id}/enroll/`, data),
+  list: (page = 1) =>
+    api.get<PaginatedResponse<any>>('/events/', { params: { page } }),
+  detail: (id: number) => api.get(`/events/${id}/`),
+  attendees: (eventId: number) =>
+    api.get(`/events/${eventId}/attendees/`),
+  register: (eventId: number) =>
+    api.post(`/events/${eventId}/register/`),
 };
 
-// Analytics endpoints
+// Communications Endpoints
+export const communicationsAPI = {
+  sendEmail: (data: any) => api.post('/communications/send-email/', data),
+  sendSMS: (data: any) => api.post('/communications/send-sms/', data),
+  notifications: (page = 1) =>
+    api.get<PaginatedResponse<any>>('/communications/notifications/', {
+      params: { page },
+    }),
+};
+
+// Analytics Endpoints
 export const analyticsAPI = {
-  placementAnalytics: (params?: any) => apiClient.get('/analytics/placements/', { params }),
-  trainingAnalytics: (params?: any) => apiClient.get('/analytics/training/', { params }),
-  attendanceAnalytics: (params?: any) => apiClient.get('/analytics/attendance/', { params }),
+  dashboard: () => api.get('/analytics/dashboard/'),
+  placements: () => api.get('/analytics/placements/'),
+  students: () => api.get('/analytics/students/'),
+  training: () => api.get('/analytics/training/'),
 };
 
-// Common endpoints
+// Common/Reference Data Endpoints
 export const commonAPI = {
-  getAcademicYears: () => apiClient.get('/common/academic-years/'),
-  getBranches: () => apiClient.get('/common/branches/'),
-  getCompanies: () => apiClient.get('/common/companies/'),
+  academicYears: () => api.get('/common/academic-years/'),
+  branches: () => api.get('/common/branches/'),
+  divisions: () => api.get('/common/divisions/'),
+  batches: () => api.get('/common/batches/'),
+  companies: () => api.get('/common/companies/'),
+  jobRoles: () => api.get('/common/job-roles/'),
+  roles: () => api.get('/common/roles/'),
 };
 
-export default apiClient;
+export default api;
