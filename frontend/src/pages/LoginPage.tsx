@@ -24,49 +24,57 @@ const LoginPage: React.FC = () => {
     setError('');
     try {
       await login(data.email, data.password);
-      navigate('/accounts', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch {
       setError('Invalid credentials. Please try again.');
     }
   };
 
   if (!isLoading && isAuthenticated) {
-    return <Navigate to="/accounts" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: '4rem auto', padding: '2rem', border: '1px solid #ddd', borderRadius: 8 }}>
-      <h1 style={{ marginTop: 0 }}>Sign In</h1>
-      <p>Use your account email and password.</p>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            {...register('email', { required: 'Email is required' })}
-          />
-          {errors.email && <p style={{ color: '#b00020' }}>{errors.email.message}</p>}
-        </div>
+    <div className="login-page">
+      <div className="login-bg-shape" />
+      <div className="card login-card">
+        <h1>Welcome Back</h1>
+        <p className="text-secondary">Sign in to continue.</p>
 
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-            {...register('password', { required: 'Password is required' })}
-          />
-          {errors.password && <p style={{ color: '#b00020' }}>{errors.password.message}</p>}
-        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="login-form">
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="name@college.edu"
+              {...register('email', { required: 'Email is required' })}
+            />
+            {errors.email && <p className="form-error">{errors.email.message}</p>}
+          </div>
 
-        {error && <p style={{ color: '#b00020' }}>{error}</p>}
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              {...register('password', { required: 'Password is required' })}
+            />
+            {errors.password && <p className="form-error">{errors.password.message}</p>}
+          </div>
 
-        <button type="submit" disabled={isSubmitting || isLoading} style={{ padding: '0.6rem 1rem' }}>
-          {isSubmitting || isLoading ? 'Signing in...' : 'Sign In'}
-        </button>
-      </form>
+          {error && <p className="form-error">{error}</p>}
+
+          <button type="submit" disabled={isSubmitting || isLoading} className="btn-primary login-submit">
+            {isSubmitting || isLoading ? 'Signing in...' : 'Login'}
+          </button>
+
+          <button type="button" className="link-button" onClick={() => alert('Forgot password flow will be added next.') }>
+            Forgot password?
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

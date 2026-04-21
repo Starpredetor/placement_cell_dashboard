@@ -3,8 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AppShell from './components/layout/AppShell';
+import DashboardPage from './pages/DashboardPage';
 import AccountsPage from './pages/AccountsPage';
 import LoginPage from './pages/LoginPage';
+import ProfilePage from './pages/ProfilePage';
 
 const queryClient = new QueryClient();
 
@@ -16,15 +19,26 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route
-              path="/accounts"
               element={
                 <ProtectedRoute>
-                  <AccountsPage />
+                  <AppShell />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/accounts" element={<AccountsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            </Route>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Navigate to="/dashboard" replace />
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/accounts" replace />} />
-            <Route path="*" element={<Navigate to="/accounts" replace />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Router>
       </AuthProvider>

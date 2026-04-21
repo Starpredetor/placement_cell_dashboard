@@ -102,7 +102,15 @@ export const authAPI = {
   refreshToken: (refresh: string) =>
     api.post('/auth/token/refresh/', { refresh }),
   me: () => api.get<AuthUser>('/auth/me/'),
+  updateMe: (data: Partial<Pick<AuthUser, 'username' | 'first_name' | 'last_name'>>) =>
+    api.patch<AuthUser>('/auth/me/', data),
+  changePassword: (data: { current_password: string; new_password: string; confirm_password: string }) =>
+    api.post('/auth/change-password/', data),
   users: () => api.get<AuthUser[]>('/auth/users/'),
+  updateUser: (
+    userId: number,
+    data: Partial<Pick<AuthUser, 'username' | 'email' | 'first_name' | 'last_name' | 'role' | 'is_active'>>
+  ) => api.patch<AuthUser>(`/auth/users/${userId}/`, data),
 };
 
 // Students Endpoints
