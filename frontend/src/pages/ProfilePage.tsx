@@ -23,7 +23,7 @@ const ProfilePage: React.FC = () => {
   const [profileError, setProfileError] = React.useState<string>('');
   const [passwordError, setPasswordError] = React.useState<string>('');
 
-  const canManageBasicProfile = user ? allowedRoles.includes(user.role) : false;
+  const canManageBasicProfile = user ? (allowedRoles as readonly string[]).includes(user.role) : false;
 
   const {
     register: registerProfile,
