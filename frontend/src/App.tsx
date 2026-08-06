@@ -134,11 +134,14 @@ const App: React.FC = () => {
                 }
               />
 
-              {/* User Role and Account Management - Admins only */}
+              {/* User and role administration.
+                  SUPER_ADMIN only, matching the API: /auth/users/ rejects
+                  every other role, so allowing TPO or HOD here would route
+                  them to a page that can only render a 403. */}
               <Route
                 path="/accounts"
                 element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD']}>
+                  <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
                     <AccountsPage />
                   </ProtectedRoute>
                 }

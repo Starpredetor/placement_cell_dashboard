@@ -9,12 +9,36 @@ export interface AuthUser {
   last_name: string;
   is_active: boolean;
   role: 'SUPER_ADMIN' | 'TPO' | 'HOD' | 'VOLUNTEER' | 'STUDENT';
+  /** Scopes a HOD to one department; null for roles that are not scoped. */
+  branch_id?: number | null;
 }
 
 export interface LoginResponse {
   access: string;
   refresh: string;
   user: AuthUser;
+}
+
+export type Role = AuthUser['role'];
+
+/** A seeded sign-in shortcut. Served only when the API runs in development. */
+export interface DemoAccount {
+  role: Role;
+  email: string;
+  password: string;
+  label: string;
+  description: string;
+}
+
+export interface ReferenceItem {
+  id: number;
+  name: string;
+  is_active: boolean;
+  sort_order: number;
+  code?: string;
+  website?: string | null;
+  start_year?: number;
+  is_current?: boolean;
 }
 
 export interface PaginatedResponse<T> {
@@ -104,7 +128,19 @@ export const authAPI = {
     new_password: string;
     confirm_password: string;
   }) => api.post('/auth/change-password/', data),
-  users: () => api.get<AuthUser[]>('/auth/users/'),
+  users: (search = '') => api.get<AuthUser[]>('/auth/users/', { params: { search } }),
+  createUser: (data: {
+    username: string;
+    email: string;
+    password: string;
+    first_name?: string;
+    last_name?: string;
+    role: Role;
+    branch_id?: number | null;
+    is_active?: boolean;
+  }) => api.post<AuthUser>('/auth/users/', data),
+  /** 404s outside development; callers should treat failure as "unavailable". */
+  demoAccounts: () => api.get<DemoAccount[]>('/auth/demo-accounts/'),
   updateUser: (
     userId: number,
     data: Partial<
@@ -196,14 +232,31 @@ export const analyticsAPI = {
 };
 
 // Common/Reference Data Endpoints
+//
+// These now return objects with ids (previously bare strings), because
+// students and opportunities reference them by foreign key.
+export type ReferenceKind =
+  'branches' | 'divisions' | 'batches' | 'companies' | 'job-roles' | 'academic-years';
+
 export const commonAPI = {
-  academicYears: () => api.get('/common/academic-years/'),
-  branches: () => api.get('/common/branches/'),
-  divisions: () => api.get('/common/divisions/'),
-  batches: () => api.get('/common/batches/'),
-  companies: () => api.get('/common/companies/'),
-  jobRoles: () => api.get('/common/job-roles/'),
-  roles: () => api.get('/common/roles/'),
+  list: (kind: ReferenceKind, includeInactive = false) =>
+    api.get<ReferenceItem[]>(`/common/${kind}/`, {
+      params: { include_inactive: includeInactive },
+    }),
+  create: (kind: ReferenceKind, data: Partial<ReferenceItem>) =>
+    api.post<ReferenceItem>(`/common/${kind}/`, data),
+  update: (kind: ReferenceKind, id: number, data: Partial<ReferenceItem>) =>
+    api.patch<ReferenceItem>(`/common/${kind}/${id}/`, data),
+  deactivate: (kind: ReferenceKind, id: number) =>
+    api.delete<ReferenceItem>(`/common/${kind}/${id}/`),
+
+  academicYears: () => api.get<ReferenceItem[]>('/common/academic-years/'),
+  branches: () => api.get<ReferenceItem[]>('/common/branches/'),
+  divisions: () => api.get<ReferenceItem[]>('/common/divisions/'),
+  batches: () => api.get<ReferenceItem[]>('/common/batches/'),
+  companies: () => api.get<ReferenceItem[]>('/common/companies/'),
+  jobRoles: () => api.get<ReferenceItem[]>('/common/job-roles/'),
+  roles: () => api.get<Role[]>('/common/roles/'),
 };
 
 export default api;

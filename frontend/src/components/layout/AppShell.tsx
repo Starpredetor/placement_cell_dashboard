@@ -140,12 +140,19 @@ const AppShell: React.FC = () => {
                 >
                   Events & Seminars
                 </NavLink>
-                <NavLink
-                  to="/accounts"
-                  className={({ isActive }) => `nav-link ${isActive ? 'is-active' : ''}`}
-                >
-                  Data & Access Control
-                </NavLink>
+                {/* User administration is SUPER_ADMIN only on both the route
+                    and the API, so TPO and HOD must not be shown a link that
+                    can only lead to an access-denied page. */}
+                {user?.role === 'SUPER_ADMIN' && (
+                  <NavLink
+                    to="/accounts"
+                    className={({ isActive }) =>
+                      `nav-link ${isActive ? 'is-active' : ''}`
+                    }
+                  >
+                    Data & Access Control
+                  </NavLink>
+                )}
               </>
             )}
           </nav>

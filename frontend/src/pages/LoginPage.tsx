@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext';
+import DemoRoleSwitcher from '../features/auth/DemoRoleSwitcher';
 
 type LoginFormValues = {
   email: string;
@@ -31,30 +32,11 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const handleQuickLogin = (role: 'student' | 'volunteer' | 'tpo' | 'admin') => {
+  const handleDemoLogin = (email: string, password: string) => {
     setError('');
-    let email = '';
-    let password = '';
-
-    if (role === 'admin') {
-      email = 'admin@college.edu';
-      password = 'admin1234';
-    } else if (role === 'student') {
-      email = 'student@college.edu';
-      password = 'student1234';
-    } else if (role === 'tpo') {
-      email = 'tpo@college.edu';
-      password = 'tpo12345';
-    } else if (role === 'volunteer') {
-      email = 'volunteer@college.edu';
-      password = 'volunteer1234';
-    }
-
     setValue('email', email);
     setValue('password', password);
-
-    // Auto submit
-    onSubmit({ email, password });
+    void onSubmit({ email, password });
   };
 
   if (!isLoading && isAuthenticated) {
@@ -110,52 +92,13 @@ const LoginPage: React.FC = () => {
               textDecoration: 'none',
               fontSize: '12px',
             }}
-            onClick={() =>
-              alert(
-                'Demo Mode: Use the Quick Demo Access pills below to log in instantly!',
-              )
-            }
+            onClick={() => alert('Demo build — use the role buttons below to sign in.')}
           >
             Forgot your password?
           </button>
         </form>
 
-        <div className="login-roles">
-          <p>Quick Demo Access</p>
-          <div
-            className="login-roles-grid"
-            style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}
-          >
-            <button
-              type="button"
-              className="role-pill"
-              onClick={() => handleQuickLogin('student')}
-            >
-              Student
-            </button>
-            <button
-              type="button"
-              className="role-pill"
-              onClick={() => handleQuickLogin('volunteer')}
-            >
-              Volunteer
-            </button>
-            <button
-              type="button"
-              className="role-pill"
-              onClick={() => handleQuickLogin('tpo')}
-            >
-              TPO Admin
-            </button>
-            <button
-              type="button"
-              className="role-pill"
-              onClick={() => handleQuickLogin('admin')}
-            >
-              Super Admin
-            </button>
-          </div>
-        </div>
+        <DemoRoleSwitcher onPick={handleDemoLogin} disabled={isSubmitting || isLoading} />
       </div>
     </div>
   );

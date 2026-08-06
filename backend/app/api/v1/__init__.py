@@ -10,12 +10,12 @@ from app.api.v1 import (
 )
 
 __all__ = [
-    "auth",
-    "students",
-    "placements",
-    "training",
-    "events",
-    "communications",
     "analytics",
+    "auth",
     "common",
+    "communications",
+    "events",
+    "placements",
+    "students",
+    "training",
 ]

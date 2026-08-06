@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user_legacy as get_current_user
 from app.db.fake_db import STUDENTS
 from app.schemas.common import PaginatedResponse
 from app.schemas.students import StudentProfile, StudentProfileUpdate
@@ -45,7 +45,19 @@ def list_students(
 
 @router.get("/me/", response_model=StudentProfile)
 def me(current_user: dict = Depends(get_current_user)) -> StudentProfile:
-    student = next((s for s in STUDENTS if s.linked_user_id == current_user["id"]), None)
+    # Accounts now live in the database while these profiles are still the
+    # pre-rewrite fixtures, so their `linked_user_id` no longer matches the
+    # seeded user ids. Email is stable across both and does not couple the seed
+    # order to a fixture. Phase 2 replaces this endpoint with a real FK join.
+    student = next(
+        (
+            s
+            for s in STUDENTS
+            if s.linked_user_id == current_user["id"]
+            or s.email.lower() == str(current_user["email"]).lower()
+        ),
+        None,
+    )
     if student is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Student profile not found"

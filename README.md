@@ -70,6 +70,29 @@ npm run dev
 
 Opens at http://localhost:5173. The API URL resolves automatically: `localhost` normally, and the page's own host when opened from another device on the same network (useful for the fast-mark attendance flows on a phone). Override with `VITE_API_URL` in `.env.local` if needed.
 
+### Signing in
+
+The seed creates one account per role. In development the login page shows a
+button for each, so you can switch roles in one click:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Super Admin | admin@college.edu | admin1234 |
+| TPO | tpo@college.edu | tpo12345 |
+| HOD | hod@college.edu | hod12345 |
+| Volunteer | volunteer@college.edu | volunteer1234 |
+| Student | student@college.edu | student1234 |
+
+These are demo fixtures, not secrets. The buttons perform a real sign-in against
+real authentication — the endpoint that supplies them returns 404 unless the API
+runs with `APP_ENV=development`, and the control is compiled out of a production
+frontend bundle.
+
+The roles differ in what they can reach: a Student gets 403 from user
+administration, a Volunteer can mark attendance but not manage reference data,
+and the HOD is scoped to a single branch. Signing in as each is the quickest way
+to see the access rules working.
+
 ## Common commands
 
 ### Backend (`cd backend`)

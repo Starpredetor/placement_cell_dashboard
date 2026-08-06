@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user_legacy as get_current_user
 from app.db.fake_db import (
     TRAINING_PROGRAMS,
     TRAINING_LECTURES,

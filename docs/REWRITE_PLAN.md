@@ -409,9 +409,52 @@ Preconditions. Nothing here is a feature; everything here prevents rework.
 
 ---
 
-### Phase 1 — Identity and access · 5 units
+### Phase 1 — Identity and access · 5 units — ✅ COMPLETE
 
 The security rewrite. Nothing else can be trusted until this lands.
+
+> **Outcome.** 207 backend tests (up from 29) and 22 frontend tests, all green;
+> ruff, mypy, eslint, prettier, tsc, and the production build clean. Argon2id
+> hashing, real signed JWTs with expiry and `jti`, rotating server-revocable
+> refresh tokens, `require_roles` on every route, and a 99-case role × endpoint
+> authorization matrix.
+>
+> **Correction to the §2.1 audit.** "No endpoint reads the role" was too broad:
+> `students.py` and `training.py` did check roles (dict-based). The genuinely
+> unguarded paths were `PATCH /auth/users/{id}/` — the privilege-escalation
+> hole — and the five stub routers, including `communications`, whose
+> email/SMS dispatch any authenticated caller could reach.
+>
+> **Deviations:**
+> - `core/rbac.py` holds pure policy only; the FastAPI dependencies live in
+>   `api/deps.py`. An earlier design that put `require_roles` in `rbac.py` needed
+>   a late-binding hack to avoid a circular import, which would have broken
+>   silently since dependencies are captured at import time.
+> - `deps.get_current_user_legacy` returns a dict-shaped user so the pre-rewrite
+>   `students`/`training` routers keep working on real JWT auth without being
+>   edited during a phase that does not own them. Delete it in Phase 4.
+> - Login throttling (5 per email / 15 min) is in-process, so it resets on
+>   restart and would need a shared store behind multiple workers. §10 covers
+>   the broader production rate limiting.
+>
+> **Bugs found and fixed:**
+> - `api/deps.py` originally re-exported `get_db` through a wrapper function.
+>   FastAPI keys dependency overrides on the exact callable, so the test
+>   override never applied — the suite would have silently used the real
+>   database instead of the fixture session.
+> - `verify_password` caught `VerifyMismatchError` but not its parent
+>   `VerificationError`, which argon2 raises for a corrupt stored hash: a
+>   damaged row would have 500'd the login endpoint instead of failing the
+>   sign-in.
+> - The frontend discarded the rotated refresh token, keeping the one the
+>   server had just revoked. Sessions would have ended at the first refresh
+>   rather than after 7 days.
+> - `/accounts` was routed for TPO and HOD while the API restricts user
+>   administration to SUPER_ADMIN; both the route and the sidebar link are now
+>   SUPER_ADMIN-only rather than leading to a guaranteed 403.
+> - The login page had demo credentials hardcoded in the bundle and always
+>   visible. They now come from `GET /auth/demo-accounts/`, which 404s unless
+>   `APP_ENV=development`, behind a second `import.meta.env.DEV` gate.
 
 **Backend**
 - `models/user.py`, `refresh_tokens`, `audit_logs`; first Alembic migration.
@@ -433,7 +476,28 @@ The security rewrite. Nothing else can be trusted until this lands.
 
 ---
 
-### Phase 2 — Reference data, student core, UI kit · 7 units
+### Phase 2 — Reference data, student core, UI kit · 7 units — 🟡 PARTIAL (2a done)
+
+> **Phase 2a — reference data — ✅ COMPLETE**, delivered alongside Phase 1 because
+> it has no dependency on students and `users.branch_id` needs a real branch FK
+> for HOD scoping.
+>
+> `branches`, `divisions`, `batches`, `companies`, `job_roles`, and
+> `academic_years` are tables with ids, replacing `common.py`'s hardcoded string
+> lists — a bare string cannot be pointed at by a foreign key. CRUD is
+> audit-logged, writes are restricted to SUPER_ADMIN/TPO, duplicates return 409
+> rather than 500, and deletion deactivates instead of removing, since these rows
+> are referenced by history.
+>
+> Two fixes worth noting: the unique-violation guard runs inside a SAVEPOINT
+> because `begin_nested()` autoflushes — opening it after the mutation let the
+> `IntegrityError` escape — and hand-rolled `model_validate` (the schema depends
+> on the URL segment, which FastAPI cannot express in a signature) needed its
+> pydantic error converted explicitly, or it surfaced as a 500 instead of a 422.
+>
+> **Phase 2b — student core and the UI kit — still outstanding:** the student
+> model, progression rules, CSV import, `components/ui`, and the reference-data
+> admin screen. `common.py` is done; `students.py` is not.
 
 **Backend**
 - `models/reference.py`, `models/student.py`; migration.
