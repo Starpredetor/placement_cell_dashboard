@@ -390,7 +390,7 @@ STUDENTS: list[StudentProfile] = [
         compliance=StudentCompliance(aadhaar_number="789078907890", pan_number="GHIJK7890L"),
         created_at=utc_now_iso(),
         updated_at=utc_now_iso(),
-    )
+    ),
 ]
 
 TOKENS: dict[str, int] = {}
@@ -432,7 +432,7 @@ TRAINING_PROGRAMS: list[dict] = [
         "start_date": "2026-07-01",
         "end_date": "2026-07-15",
         "batch": "Batch 1",
-    }
+    },
 ]
 
 TRAINING_LECTURES: list[dict] = [
@@ -459,7 +459,7 @@ TRAINING_LECTURES: list[dict] = [
         "date": "2026-07-03",
         "session_type": "BOTH",
         "batch": "Batch 1",
-    }
+    },
 ]
 
 TRAINING_ATTENDANCE: list[dict] = [
@@ -467,14 +467,12 @@ TRAINING_ATTENDANCE: list[dict] = [
         "id": 1,
         "lecture_id": 1,
         "student_id": 1,  # Aarav Patil
-        "status": "BOTH"
+        "status": "BOTH",
     },
     {
         "id": 2,
         "lecture_id": 2,
         "student_id": 1,  # Aarav Patil
-        "status": "MS"  # Morning only
-    }
+        "status": "MS",  # Morning only
+    },
 ]
-
-

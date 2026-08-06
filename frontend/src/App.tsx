@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppShell from './components/layout/AppShell';
@@ -21,8 +22,6 @@ import TrainingFastMarkPage from './pages/TrainingFastMarkPage';
 import EventsPage from './pages/EventsPage';
 import EventSeminarCreatePage from './pages/EventSeminarCreatePage';
 
-const queryClient = new QueryClient();
-
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -30,7 +29,7 @@ const App: React.FC = () => {
         <Router>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            
+
             <Route
               element={
                 <ProtectedRoute>
@@ -45,7 +44,9 @@ const App: React.FC = () => {
               <Route
                 path="/placements/opportunities/create"
                 element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}>
+                  <ProtectedRoute
+                    allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}
+                  >
                     <PlacementOpportunityCreatePage />
                   </ProtectedRoute>
                 }
@@ -53,7 +54,9 @@ const App: React.FC = () => {
               <Route
                 path="/placements/drives/create"
                 element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}>
+                  <ProtectedRoute
+                    allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}
+                  >
                     <PlacementDriveCreatePage />
                   </ProtectedRoute>
                 }
@@ -61,7 +64,9 @@ const App: React.FC = () => {
               <Route
                 path="/placements/drives/mark-single/:driveId"
                 element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}>
+                  <ProtectedRoute
+                    allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}
+                  >
                     <PlacementDriveFastMarkPage />
                   </ProtectedRoute>
                 }
@@ -70,7 +75,9 @@ const App: React.FC = () => {
               <Route
                 path="/training/create"
                 element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}>
+                  <ProtectedRoute
+                    allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}
+                  >
                     <TrainingSessionCreatePage />
                   </ProtectedRoute>
                 }
@@ -78,7 +85,9 @@ const App: React.FC = () => {
               <Route
                 path="/training/mark-single/:lectureId"
                 element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}>
+                  <ProtectedRoute
+                    allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}
+                  >
                     <TrainingFastMarkPage />
                   </ProtectedRoute>
                 }
@@ -97,7 +106,9 @@ const App: React.FC = () => {
               <Route
                 path="/students"
                 element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}>
+                  <ProtectedRoute
+                    allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}
+                  >
                     <StudentsPage />
                   </ProtectedRoute>
                 }
@@ -105,7 +116,9 @@ const App: React.FC = () => {
               <Route
                 path="/students/:studentId"
                 element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}>
+                  <ProtectedRoute
+                    allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}
+                  >
                     <StudentProfileAdminPage />
                   </ProtectedRoute>
                 }
@@ -113,7 +126,9 @@ const App: React.FC = () => {
               <Route
                 path="/students/:studentId/edit"
                 element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}>
+                  <ProtectedRoute
+                    allowedRoles={['SUPER_ADMIN', 'TPO', 'HOD', 'VOLUNTEER']}
+                  >
                     <StudentEditPage />
                   </ProtectedRoute>
                 }
@@ -140,7 +155,7 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
-            
+
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Router>

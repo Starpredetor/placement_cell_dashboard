@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Strictness. `strict` alone leaves several real bug classes unchecked. */
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    /*
+     * Deferred, not abandoned. Enabling these surfaces 11 unused declarations
+     * in pre-rewrite pages (EventsPage, PlacementsPage, ProfilePage,
+     * StudentsPage, PlacementOpportunityCreatePage). They are non-functional,
+     * but some mark real gaps rather than dead code — StudentsPage's unused
+     * `setPage` means its pagination never advances, which Phase 2 fixes when
+     * it rebuilds that page on the shared DataTable.
+     *
+     * Turn each on as the last offending page is rewritten; both should be
+     * true by the end of Phase 5. See docs/REWRITE_PLAN.md §7.
+     */
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"]
+}

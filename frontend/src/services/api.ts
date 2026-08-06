@@ -1,9 +1,4 @@
-import axios, {
-  AxiosInstance,
-  AxiosResponse,
-  AxiosError,
-  InternalAxiosRequestConfig,
-} from 'axios';
+import api from '../lib/apiClient';
 
 // API Response Types
 export interface AuthUser {
@@ -95,111 +90,43 @@ export interface StudentProfile {
   updated_at: string;
 }
 
-// Resolve dynamic base URL for cross-device mobile support
-const getBaseURL = () => {
-  if (process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL;
-  }
-  const hostname = window.location.hostname;
-  // If accessing on local network IP (e.g. from a mobile phone), dynamically use the host IP!
-  if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-    return `http://${hostname}:8000/api/v1`;
-  }
-  return 'http://localhost:8000/api/v1';
-};
-
-// Create axios instance
-const api: AxiosInstance = axios.create({
-  baseURL: getBaseURL(),
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Request Interceptor - Add JWT token to headers
-api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error: AxiosError) => Promise.reject(error)
-);
-
-// Response Interceptor - Handle token refresh on 401
-api.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (!refreshToken) {
-          // No refresh token available, redirect to login
-          localStorage.clear();
-          window.location.href = '/login';
-          return Promise.reject(error);
-        }
-
-        const response = await axios.post(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1'}/auth/token/refresh/`,
-          { refresh: refreshToken }
-        );
-
-        const { access } = response.data;
-        localStorage.setItem('access_token', access);
-
-        // Retry original request with new token
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${access}`;
-        }
-        return api(originalRequest);
-      } catch (refreshError) {
-        // Refresh failed, clear tokens and redirect to login
-        localStorage.clear();
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
-
 // Auth Endpoints
 export const authAPI = {
   login: (email: string, password: string) =>
     api.post<LoginResponse>('/auth/login/', { email, password }),
   logout: () => api.post('/auth/logout/'),
-  refreshToken: (refresh: string) =>
-    api.post('/auth/token/refresh/', { refresh }),
+  refreshToken: (refresh: string) => api.post('/auth/token/refresh/', { refresh }),
   me: () => api.get<AuthUser>('/auth/me/'),
   updateMe: (data: Partial<Pick<AuthUser, 'username' | 'first_name' | 'last_name'>>) =>
     api.patch<AuthUser>('/auth/me/', data),
-  changePassword: (data: { current_password: string; new_password: string; confirm_password: string }) =>
-    api.post('/auth/change-password/', data),
+  changePassword: (data: {
+    current_password: string;
+    new_password: string;
+    confirm_password: string;
+  }) => api.post('/auth/change-password/', data),
   users: () => api.get<AuthUser[]>('/auth/users/'),
   updateUser: (
     userId: number,
-    data: Partial<Pick<AuthUser, 'username' | 'email' | 'first_name' | 'last_name' | 'role' | 'is_active'>>
+    data: Partial<
+      Pick<
+        AuthUser,
+        'username' | 'email' | 'first_name' | 'last_name' | 'role' | 'is_active'
+      >
+    >,
   ) => api.patch<AuthUser>(`/auth/users/${userId}/`, data),
 };
 
 // Students Endpoints
 export const studentsAPI = {
   list: (page = 1, search = '') =>
-    api.get<PaginatedResponse<StudentProfile>>('/students/', { params: { page, search } }),
+    api.get<PaginatedResponse<StudentProfile>>('/students/', {
+      params: { page, search },
+    }),
   detail: (id: number) => api.get<StudentProfile>(`/students/${id}/`),
   me: () => api.get<StudentProfile>('/students/me/'),
   create: (data: Partial<StudentProfile>) => api.post<StudentProfile>('/students/', data),
-  update: (id: number, data: Partial<StudentProfile>) => api.patch<StudentProfile>(`/students/${id}/`, data),
+  update: (id: number, data: Partial<StudentProfile>) =>
+    api.patch<StudentProfile>(`/students/${id}/`, data),
   delete: (id: number) => api.delete(`/students/${id}/`),
 };
 
@@ -213,43 +140,41 @@ export const placementsAPI = {
     api.get<PaginatedResponse<any>>('/placements/applications/', {
       params: { page },
     }),
-  createApplication: (data: any) =>
-    api.post('/placements/applications/', data),
+  createApplication: (data: any) => api.post('/placements/applications/', data),
 };
 
 // Training Endpoints
 export const trainingAPI = {
-  programs: () =>
-    api.get<PaginatedResponse<any>>('/training/programs/'),
-  createProgram: (data: any) =>
-    api.post('/training/programs/', data),
+  programs: () => api.get<PaginatedResponse<any>>('/training/programs/'),
+  createProgram: (data: any) => api.post('/training/programs/', data),
   lectures: (programId?: number) =>
-    api.get<PaginatedResponse<any>>('/training/lectures/', { params: { program_id: programId } }),
-  createLecture: (data: any) =>
-    api.post('/training/lectures/', data),
+    api.get<PaginatedResponse<any>>('/training/lectures/', {
+      params: { program_id: programId },
+    }),
+  createLecture: (data: any) => api.post('/training/lectures/', data),
   attendance: (lectureId?: number, studentId?: number) =>
-    api.get<PaginatedResponse<any>>('/training/attendance/', { params: { lecture_id: lectureId, student_id: studentId } }),
+    api.get<PaginatedResponse<any>>('/training/attendance/', {
+      params: { lecture_id: lectureId, student_id: studentId },
+    }),
   markAttendance: (data: { lecture_id: number; student_id: number; status: string }) =>
     api.post('/training/attendance/mark/', data),
-  batches: () =>
-    api.get<PaginatedResponse<any>>('/training/batches/'),
+  batches: () => api.get<PaginatedResponse<any>>('/training/batches/'),
   createBatch: (data: { name: string; is_active?: boolean }) =>
     api.post('/training/batches/', data),
-  rollover: () =>
-    api.post('/training/rollover/'),
-  markAttendanceByRoll: (data: { lecture_id: number; college_roll_no: string; status: string }) =>
-    api.post<any>('/training/attendance/mark-by-roll/', data),
+  rollover: () => api.post('/training/rollover/'),
+  markAttendanceByRoll: (data: {
+    lecture_id: number;
+    college_roll_no: string;
+    status: string;
+  }) => api.post<any>('/training/attendance/mark-by-roll/', data),
 };
 
 // Events Endpoints
 export const eventsAPI = {
-  list: (page = 1) =>
-    api.get<PaginatedResponse<any>>('/events/', { params: { page } }),
+  list: (page = 1) => api.get<PaginatedResponse<any>>('/events/', { params: { page } }),
   detail: (id: number) => api.get(`/events/${id}/`),
-  attendees: (eventId: number) =>
-    api.get(`/events/${eventId}/attendees/`),
-  register: (eventId: number) =>
-    api.post(`/events/${eventId}/register/`),
+  attendees: (eventId: number) => api.get(`/events/${eventId}/attendees/`),
+  register: (eventId: number) => api.post(`/events/${eventId}/register/`),
 };
 
 // Communications Endpoints

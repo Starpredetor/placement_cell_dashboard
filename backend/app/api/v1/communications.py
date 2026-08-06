@@ -18,5 +18,7 @@ def send_sms(_payload: dict, _current_user: dict = Depends(get_current_user)) ->
 
 
 @router.get("/notifications/", response_model=PaginatedResponse[GenericItem])
-def notifications(_current_user: dict = Depends(get_current_user)) -> PaginatedResponse[GenericItem]:
+def notifications(
+    _current_user: dict = Depends(get_current_user),
+) -> PaginatedResponse[GenericItem]:
     return PaginatedResponse[GenericItem](count=0, next=None, previous=None, results=[])

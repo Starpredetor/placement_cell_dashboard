@@ -1,7 +1,25 @@
-fastapi==0.115.5
-uvicorn[standard]==0.32.1
-pydantic==2.10.2
-email-validator==2.2.0
-python-dotenv==1.0.1
-pytest==8.3.3
-httpx==0.27.2
+# Runtime dependencies.
+#
+# Floors are set to versions verified on Python 3.14. Install with
+# --no-cache-dir if pip resolves to older builds; a stale wheel cache can
+# serve a binary built for a different interpreter (a cp312 pydantic-core in a
+# 3.14 environment fails at import with a missing _pydantic_core module).
+#
+# requirements.lock.txt holds the exact resolved set.
+
+fastapi>=0.141.1
+uvicorn[standard]>=0.52.1
+pydantic>=2.13.4
+pydantic-settings>=2.14.2
+email-validator>=2.3.0
+
+# Persistence
+SQLAlchemy>=2.0.51
+alembic>=1.19.0
+
+# Security (used from Phase 1 onward)
+pyjwt>=2.13.0
+argon2-cffi>=25.1.0
+
+# Uploads (Phase 3)
+python-multipart>=0.0.32

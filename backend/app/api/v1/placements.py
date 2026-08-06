@@ -8,8 +8,13 @@ router = APIRouter()
 
 
 @router.get("/opportunities/", response_model=PaginatedResponse[GenericItem])
-def opportunities(_current_user: dict = Depends(get_current_user)) -> PaginatedResponse[GenericItem]:
-    items = [GenericItem(id=1, name="Graduate Engineer Trainee"), GenericItem(id=2, name="Software Analyst")]
+def opportunities(
+    _current_user: dict = Depends(get_current_user),
+) -> PaginatedResponse[GenericItem]:
+    items = [
+        GenericItem(id=1, name="Graduate Engineer Trainee"),
+        GenericItem(id=2, name="Software Analyst"),
+    ]
     return PaginatedResponse[GenericItem](count=len(items), next=None, previous=None, results=items)
 
 
@@ -20,10 +25,14 @@ def applications(_current_user: dict = Depends(get_current_user)) -> PaginatedRe
 
 
 @router.post("/applications/")
-def create_application(_payload: dict, _current_user: dict = Depends(get_current_user)) -> dict[str, str]:
+def create_application(
+    _payload: dict, _current_user: dict = Depends(get_current_user)
+) -> dict[str, str]:
     return {"detail": "Application created"}
 
 
 @router.put("/applications/{application_id}/")
-def update_application(application_id: int, _payload: dict, _current_user: dict = Depends(get_current_user)) -> dict[str, str | int]:
+def update_application(
+    application_id: int, _payload: dict, _current_user: dict = Depends(get_current_user)
+) -> dict[str, str | int]:
     return {"detail": "Application updated", "id": application_id}

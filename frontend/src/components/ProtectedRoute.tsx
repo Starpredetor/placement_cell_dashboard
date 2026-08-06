@@ -15,7 +15,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
   if (isLoading) {
     return (
       <div style={{ display: 'grid', placeItems: 'center', height: '80vh' }}>
-        <div style={{ textAlign: 'center', color: 'var(--color-primary)', fontWeight: 'bold' }}>
+        <div
+          style={{
+            textAlign: 'center',
+            color: 'var(--color-primary)',
+            fontWeight: 'bold',
+          }}
+        >
           Loading CRM Session...
         </div>
       </div>
@@ -34,4 +40,3 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles 
 };
 
 export default ProtectedRoute;
-

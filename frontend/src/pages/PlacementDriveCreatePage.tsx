@@ -45,7 +45,7 @@ const PlacementDriveCreatePage: React.FC = () => {
 
     setSaving(true);
     try {
-      const selectedJob = jobs.find(j => j.id === Number(opportunityId));
+      const selectedJob = jobs.find((j) => j.id === Number(opportunityId));
       if (!selectedJob) return;
 
       // --- Importer Engine ---
@@ -54,11 +54,11 @@ const PlacementDriveCreatePage: React.FC = () => {
       const applications = storedApps ? JSON.parse(storedApps) : {};
 
       const driveApplicants = Object.keys(applications)
-        .filter(key => key.startsWith(`${opportunityId}-`))
-        .map(key => applications[key]);
+        .filter((key) => key.startsWith(`${opportunityId}-`))
+        .map((key) => applications[key]);
 
       const attendanceRecords: Record<number, 'Present' | 'Absent' | 'Late'> = {};
-      driveApplicants.forEach(app => {
+      driveApplicants.forEach((app) => {
         attendanceRecords[app.studentId] = 'Present'; // Default turnout Present
       });
 
@@ -71,12 +71,17 @@ const PlacementDriveCreatePage: React.FC = () => {
         opportunityName: selectedJob.company,
         name: driveName,
         date: driveDate,
-        attendance: attendanceRecords
+        attendance: attendanceRecords,
       };
 
-      localStorage.setItem('placement_crm_drives', JSON.stringify([...drivesList, newDrive]));
-      alert(`Placement Drive "${driveName}" created successfully! Imported ${Object.keys(attendanceRecords).length} candidates.`);
-      
+      localStorage.setItem(
+        'placement_crm_drives',
+        JSON.stringify([...drivesList, newDrive]),
+      );
+      alert(
+        `Placement Drive "${driveName}" created successfully! Imported ${Object.keys(attendanceRecords).length} candidates.`,
+      );
+
       // Navigate back and request to activate the 'attendance' tab
       navigate('/placements', { state: { activeTab: 'attendance' } });
     } catch (err) {
@@ -91,16 +96,19 @@ const PlacementDriveCreatePage: React.FC = () => {
     <div style={{ display: 'grid', gap: 'var(--space-lg)', justifyItems: 'center' }}>
       <section className="page-header" style={{ width: '100%', maxWidth: '600px' }}>
         <div style={{ width: '100%' }}>
-          <button 
-            type="button" 
-            className="btn-secondary" 
+          <button
+            type="button"
+            className="btn-secondary"
             style={{ marginBottom: '12px', padding: '6px 12px', fontSize: '12.5px' }}
             onClick={() => navigate('/placements')}
           >
             ← Back to Placements Board
           </button>
           <h1 style={{ textAlign: 'left' }}>Create Placement Drive</h1>
-          <p className="text-secondary" style={{ textAlign: 'left' }}>Schedule a daily placement round. The system will auto-import all applied candidates instantly.</p>
+          <p className="text-secondary" style={{ textAlign: 'left' }}>
+            Schedule a daily placement round. The system will auto-import all applied
+            candidates instantly.
+          </p>
         </div>
       </section>
 
@@ -108,37 +116,57 @@ const PlacementDriveCreatePage: React.FC = () => {
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
           <label className="form-group">
             Drive / Round Name
-            <input 
-              type="text" 
-              value={driveName} 
-              onChange={e => setDriveName(e.target.value)} 
-              placeholder="e.g. StartupX Aptitude Test Day" 
+            <input
+              type="text"
+              value={driveName}
+              onChange={(e) => setDriveName(e.target.value)}
+              placeholder="e.g. StartupX Aptitude Test Day"
               required
             />
           </label>
 
           <label className="form-group">
             Select Opportunity (Imports Applied Candidates)
-            <select value={opportunityId} onChange={e => setOpportunityId(Number(e.target.value))} required>
+            <select
+              value={opportunityId}
+              onChange={(e) => setOpportunityId(Number(e.target.value))}
+              required
+            >
               <option value="">-- Choose Job Opening --</option>
-              {jobs.map(j => (
-                <option key={j.id} value={j.id}>{j.company} - {j.role}</option>
+              {jobs.map((j) => (
+                <option key={j.id} value={j.id}>
+                  {j.company} - {j.role}
+                </option>
               ))}
             </select>
           </label>
 
           <label className="form-group">
             Drive Date
-            <input 
-              type="date" 
-              value={driveDate} 
-              onChange={e => setDriveDate(e.target.value)} 
+            <input
+              type="date"
+              value={driveDate}
+              onChange={(e) => setDriveDate(e.target.value)}
               required
             />
           </label>
 
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
-            <button type="button" className="btn-secondary" onClick={() => navigate('/placements')}>Cancel</button>
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+              borderTop: '1px solid var(--color-border)',
+              paddingTop: '16px',
+            }}
+          >
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => navigate('/placements')}
+            >
+              Cancel
+            </button>
             <button type="submit" className="btn-success" disabled={saving}>
               {saving ? 'Creating & Importing...' : 'Create & Import Candidates'}
             </button>

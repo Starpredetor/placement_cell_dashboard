@@ -54,7 +54,9 @@ def logout(current_user: dict = Depends(get_current_user)) -> dict[str, str]:
 def refresh(payload: RefreshRequest) -> RefreshResponse:
     user_id = REFRESH_TOKENS.get(payload.refresh)
     if user_id is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
+        )
 
     access = new_token()
     TOKENS[access] = user_id
@@ -78,11 +80,17 @@ def update_me(payload: UpdateMeRequest, current_user: dict = Depends(get_current
 
 
 @router.post("/change-password/")
-def change_password(payload: ChangePasswordRequest, current_user: dict = Depends(get_current_user)) -> dict[str, str]:
+def change_password(
+    payload: ChangePasswordRequest, current_user: dict = Depends(get_current_user)
+) -> dict[str, str]:
     if payload.current_password != current_user["password"]:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect"
+        )
     if payload.new_password != payload.confirm_password:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New passwords do not match")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="New passwords do not match"
+        )
 
     current_user["password"] = payload.new_password
     return {"detail": "Password updated"}
@@ -94,7 +102,9 @@ def users(_current_user: dict = Depends(get_current_user)) -> list[AuthUser]:
 
 
 @router.patch("/users/{user_id}/", response_model=AuthUser)
-def update_user(user_id: int, payload: UpdateUserRequest, _current_user: dict = Depends(get_current_user)) -> AuthUser:
+def update_user(
+    user_id: int, payload: UpdateUserRequest, _current_user: dict = Depends(get_current_user)
+) -> AuthUser:
     user = _find_user_by_id(user_id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")

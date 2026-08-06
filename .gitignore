@@ -25,13 +25,14 @@ ENV/
 env/
 .venv
 
-# Django
+# Database (a build artifact: regenerate with scripts/reset_db.py)
+*.db
+*.db-wal
+*.db-shm
 *.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-/media/
-/staticfiles/
+
+# Uploaded documents (Phase 3)
+backend/var/
 
 # Node
 node_modules/
@@ -39,9 +40,8 @@ npm-debug.log
 yarn-error.log
 *.tgz
 
-# React
-build/
-dist/
+# Frontend build output
+frontend/dist/
 coverage/
 .env
 .env.local

@@ -38,14 +38,18 @@ def list_students(
     start = (page - 1) * page_size
     end = start + page_size
     results = filtered[start:end]
-    return PaginatedResponse[StudentProfile](count=len(filtered), next=None, previous=None, results=results)
+    return PaginatedResponse[StudentProfile](
+        count=len(filtered), next=None, previous=None, results=results
+    )
 
 
 @router.get("/me/", response_model=StudentProfile)
 def me(current_user: dict = Depends(get_current_user)) -> StudentProfile:
     student = next((s for s in STUDENTS if s.linked_user_id == current_user["id"]), None)
     if student is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student profile not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Student profile not found"
+        )
     return student
 
 
@@ -58,9 +62,13 @@ def detail(student_id: int, _current_user: dict = Depends(get_current_user)) -> 
 
 
 @router.post("/", response_model=StudentProfile)
-def create(student: StudentProfile, _current_user: dict = Depends(get_current_user)) -> StudentProfile:
+def create(
+    student: StudentProfile, _current_user: dict = Depends(get_current_user)
+) -> StudentProfile:
     if any(s.id == student.id for s in STUDENTS):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Student id already exists")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Student id already exists"
+        )
 
     now = _utc_now_iso()
     stored = student.model_copy(update={"created_at": now, "updated_at": now})
@@ -69,15 +77,22 @@ def create(student: StudentProfile, _current_user: dict = Depends(get_current_us
 
 
 @router.patch("/{student_id}/", response_model=StudentProfile)
-def update(student_id: int, payload: StudentProfileUpdate, _current_user: dict = Depends(get_current_user)) -> StudentProfile:
+def update(
+    student_id: int, payload: StudentProfileUpdate, _current_user: dict = Depends(get_current_user)
+) -> StudentProfile:
     if _current_user["role"] == "STUDENT":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Students are not allowed to update student details.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Students are not allowed to update student details.",
+        )
 
     student = next((s for s in STUDENTS if s.id == student_id), None)
     if student is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not found")
 
-    updated = student.model_copy(update={**payload.model_dump(exclude_unset=True), "updated_at": _utc_now_iso()})
+    updated = student.model_copy(
+        update={**payload.model_dump(exclude_unset=True), "updated_at": _utc_now_iso()}
+    )
     idx = STUDENTS.index(student)
     STUDENTS[idx] = updated
     return updated
@@ -86,7 +101,10 @@ def update(student_id: int, payload: StudentProfileUpdate, _current_user: dict =
 @router.delete("/{student_id}/")
 def delete(student_id: int, _current_user: dict = Depends(get_current_user)) -> dict[str, str]:
     if _current_user["role"] not in ["SUPER_ADMIN", "TPO", "HOD"]:
-      raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete student profiles.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to delete student profiles.",
+        )
 
     student = next((s for s in STUDENTS if s.id == student_id), None)
     if student is None:

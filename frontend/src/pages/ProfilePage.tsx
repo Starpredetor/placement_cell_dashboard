@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useQuery } from 'react-query';
+import { useQuery } from '../lib/legacyQuery';
 
 import { useAuth } from '../context/AuthContext';
 import { authAPI, StudentProfile, studentsAPI } from '../services/api';
@@ -40,7 +40,11 @@ export const getResumeForStudent = (studentId: number) => {
   return null;
 };
 
-export const saveResumeForStudent = (studentId: number, filename: string, size: string) => {
+export const saveResumeForStudent = (
+  studentId: number,
+  filename: string,
+  size: string,
+) => {
   try {
     const resumes = localStorage.getItem('placement_crm_resumes') || '{}';
     const parsed = JSON.parse(resumes);
@@ -52,8 +56,8 @@ export const saveResumeForStudent = (studentId: number, filename: string, size: 
         day: 'numeric',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
-      })
+        minute: '2-digit',
+      }),
     };
     localStorage.setItem('placement_crm_resumes', JSON.stringify(parsed));
   } catch (e) {
@@ -92,15 +96,15 @@ const ProfilePage: React.FC = () => {
       const response = await studentsAPI.me();
       return response.data;
     },
-    { 
-      enabled: user?.role === 'STUDENT', 
+    {
+      enabled: user?.role === 'STUDENT',
       retry: false,
       onSuccess: (data) => {
         if (data?.id) {
           setUploadedResume(getResumeForStudent(data.id));
         }
-      }
-    }
+      },
+    },
   );
 
   const student = studentProfileQuery.data;
@@ -133,7 +137,8 @@ const ProfilePage: React.FC = () => {
       setUser(response.data);
       setProfileMessage('Account details updated successfully.');
     } catch (error: any) {
-      const backendMessage = error?.response?.data?.username?.[0] || error?.response?.data?.detail;
+      const backendMessage =
+        error?.response?.data?.username?.[0] || error?.response?.data?.detail;
       setProfileError(backendMessage || 'Unable to update account details.');
     }
   };
@@ -144,7 +149,9 @@ const ProfilePage: React.FC = () => {
 
     try {
       await authAPI.changePassword(data);
-      setPasswordMessage('Password updated successfully. Please use the new password next time.');
+      setPasswordMessage(
+        'Password updated successfully. Please use the new password next time.',
+      );
       resetPasswordForm();
     } catch (error: any) {
       const payload = error?.response?.data;
@@ -173,7 +180,11 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleResumeDelete = () => {
-    if (!student?.id || !window.confirm('Are you sure you want to delete your uploaded resume?')) return;
+    if (
+      !student?.id ||
+      !window.confirm('Are you sure you want to delete your uploaded resume?')
+    )
+      return;
     deleteResumeForStudent(student.id);
     setUploadedResume(null);
   };
@@ -187,7 +198,9 @@ const ProfilePage: React.FC = () => {
       <section className="page-header">
         <div>
           <h1>My Account Profile</h1>
-          <p className="text-secondary">View your student credentials, grades, and manage password security.</p>
+          <p className="text-secondary">
+            View your student credentials, grades, and manage password security.
+          </p>
         </div>
       </section>
 
@@ -203,13 +216,23 @@ const ProfilePage: React.FC = () => {
           {studentProfileQuery.isError && (
             <article className="card form-error">
               <h2>Student Record Not Linked</h2>
-              <p className="text-secondary">Your login session is active, but your username has not been associated with a student record yet.</p>
+              <p className="text-secondary">
+                Your login session is active, but your username has not been associated
+                with a student record yet.
+              </p>
             </article>
           )}
 
           {student && (
             <article className="card student-profile-card">
-              <div className="student-profile-hero" style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '12px', marginBottom: '8px' }}>
+              <div
+                className="student-profile-hero"
+                style={{
+                  borderBottom: '1px solid var(--color-border)',
+                  paddingBottom: '12px',
+                  marginBottom: '8px',
+                }}
+              >
                 <div>
                   <p className="service-eyebrow">Student record</p>
                   <h2 style={{ fontSize: '26px', margin: 0 }}>{student.full_name}</h2>
@@ -217,7 +240,10 @@ const ProfilePage: React.FC = () => {
                     {student.college_roll_no} | {student.branch} | {student.batch}
                   </p>
                 </div>
-                <div className="sidebar-role-badge" style={{ padding: '4px 10px', fontSize: '11px' }}>
+                <div
+                  className="sidebar-role-badge"
+                  style={{ padding: '4px 10px', fontSize: '11px' }}
+                >
                   {student.status}
                 </div>
               </div>
@@ -266,7 +292,9 @@ const ProfilePage: React.FC = () => {
                   </span>
                   <span>
                     <strong>Expected Graduation</strong>
-                    {student.expected_graduation_year} ({student.entry_mode === 'LATERAL_DIPLOMA' ? 'Lateral' : 'Regular'} entry)
+                    {student.expected_graduation_year} (
+                    {student.entry_mode === 'LATERAL_DIPLOMA' ? 'Lateral' : 'Regular'}{' '}
+                    entry)
                   </span>
                 </div>
               )}
@@ -276,33 +304,78 @@ const ProfilePage: React.FC = () => {
                 <div className="profile-detail-grid" style={{ marginTop: '12px' }}>
                   <span>
                     <strong>10th Board & Percentage</strong>
-                    {student.academic_history?.tenth_percentage}% ({student.academic_history?.tenth_board})
+                    {student.academic_history?.tenth_percentage}% (
+                    {student.academic_history?.tenth_board})
                   </span>
                   <span>
                     <strong>12th / Diploma percentage</strong>
-                    {student.academic_history?.twelfth_or_diploma_percentage}% ({student.academic_history?.twelfth_or_diploma_type})
+                    {student.academic_history?.twelfth_or_diploma_percentage}% (
+                    {student.academic_history?.twelfth_or_diploma_type})
                   </span>
                   <span>
                     <strong>Current Cumulative GPA (CGPI)</strong>
-                    <strong style={{ color: 'var(--color-primary)', display: 'block', fontSize: '16px', marginTop: '2px' }}>
+                    <strong
+                      style={{
+                        color: 'var(--color-primary)',
+                        display: 'block',
+                        fontSize: '16px',
+                        marginTop: '2px',
+                      }}
+                    >
                       {displayValue(student.academic_history?.se_cgpi)} CGPI
                     </strong>
                   </span>
                   <span>
                     <strong>Backlogs & KTs</strong>
-                    <span style={{ color: student.academic_history?.live_kt ? 'var(--color-error)' : 'var(--color-accent)', fontWeight: 'bold' }}>
-                      {student.academic_history?.live_kt ?? 0} Live KTs / {student.academic_history?.dead_kt ?? 0} Dead KTs
+                    <span
+                      style={{
+                        color: student.academic_history?.live_kt
+                          ? 'var(--color-error)'
+                          : 'var(--color-accent)',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {student.academic_history?.live_kt ?? 0} Live KTs /{' '}
+                      {student.academic_history?.dead_kt ?? 0} Dead KTs
                     </span>
                   </span>
-                  <div className="form-group-wide" style={{ border: '1px solid var(--color-border)', borderRadius: '10px', padding: '14px', background: '#F8FAFC' }}>
+                  <div
+                    className="form-group-wide"
+                    style={{
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '10px',
+                      padding: '14px',
+                      background: '#F8FAFC',
+                    }}
+                  >
                     <strong>Acquired Certifications & Courses</strong>
-                    <p style={{ margin: '6px 0 0', color: 'var(--color-slate-600)', fontSize: '13px' }}>
+                    <p
+                      style={{
+                        margin: '6px 0 0',
+                        color: 'var(--color-slate-600)',
+                        fontSize: '13px',
+                      }}
+                    >
                       {displayValue(student.academic_history?.courses_done_text)}
                     </p>
                   </div>
-                  <div className="form-group-wide" style={{ border: '1px solid var(--color-border)', borderRadius: '10px', padding: '14px', background: '#F8FAFC' }}>
+                  <div
+                    className="form-group-wide"
+                    style={{
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '10px',
+                      padding: '14px',
+                      background: '#F8FAFC',
+                    }}
+                  >
                     <strong>Completed Internships</strong>
-                    <p style={{ margin: '6px 0 0', color: 'var(--color-slate-600)', fontSize: '13px' }}>
+                    <p
+                      style={{
+                        margin: '6px 0 0',
+                        color: 'var(--color-slate-600)',
+                        fontSize: '13px',
+                      }}
+                    >
                       {displayValue(student.academic_history?.internships_text)}
                     </p>
                   </div>
@@ -314,46 +387,90 @@ const ProfilePage: React.FC = () => {
                 <div className="tab-panel" style={{ marginTop: '12px' }}>
                   <h2>Resume File Management</h2>
                   <p className="text-secondary" style={{ margin: 0 }}>
-                    Please upload your latest professional resume. This document is automatically collected and bundled when you apply to active job drives or TPO exports.
+                    Please upload your latest professional resume. This document is
+                    automatically collected and bundled when you apply to active job
+                    drives or TPO exports.
                   </p>
 
                   <div style={{ display: 'grid', gap: '14px', margin: '14px 0' }}>
                     {uploadedResume ? (
-                      <div className="document-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', background: '#F8FAFC' }}>
+                      <div
+                        className="document-row"
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          padding: '16px',
+                          background: '#F8FAFC',
+                        }}
+                      >
                         <div>
-                          <strong style={{ color: 'var(--color-slate-900)', display: 'block' }}>{uploadedResume.filename}</strong>
-                          <span className="table-subtext">Size: {uploadedResume.size} | Uploaded: {uploadedResume.uploadedAt}</span>
+                          <strong
+                            style={{ color: 'var(--color-slate-900)', display: 'block' }}
+                          >
+                            {uploadedResume.filename}
+                          </strong>
+                          <span className="table-subtext">
+                            Size: {uploadedResume.size} | Uploaded:{' '}
+                            {uploadedResume.uploadedAt}
+                          </span>
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                          <a 
-                            href="#" 
-                            className="btn-secondary button-link" 
+                          <a
+                            href="#"
+                            className="btn-secondary button-link"
                             style={{ padding: '8px 14px' }}
-                            onClick={(e) => { e.preventDefault(); alert(`Downloading file: ${uploadedResume.filename}`); }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              alert(`Downloading file: ${uploadedResume.filename}`);
+                            }}
                           >
                             Download
                           </a>
-                          <button type="button" className="btn-danger" style={{ padding: '8px 14px' }} onClick={handleResumeDelete}>
+                          <button
+                            type="button"
+                            className="btn-danger"
+                            style={{ padding: '8px 14px' }}
+                            onClick={handleResumeDelete}
+                          >
                             Delete
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <div className="empty-module-state" style={{ display: 'grid', justifyItems: 'center', gap: '8px' }}>
+                      <div
+                        className="empty-module-state"
+                        style={{ display: 'grid', justifyItems: 'center', gap: '8px' }}
+                      >
                         <strong>No resume uploaded yet</strong>
-                        <p className="text-secondary" style={{ fontSize: '13px' }}>Upload a PDF or Word document to unlock job applications.</p>
-                        
-                        <label className="btn-primary" style={{ padding: '10px 20px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
+                        <p className="text-secondary" style={{ fontSize: '13px' }}>
+                          Upload a PDF or Word document to unlock job applications.
+                        </p>
+
+                        <label
+                          className="btn-primary"
+                          style={{
+                            padding: '10px 20px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                          }}
+                        >
                           Select & Upload Resume
-                          <input 
-                            type="file" 
-                            accept=".pdf,.doc,.docx" 
-                            style={{ display: 'none' }} 
-                            onChange={handleResumeUpload} 
-                            disabled={isUploading} 
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            style={{ display: 'none' }}
+                            onChange={handleResumeUpload}
+                            disabled={isUploading}
                           />
                         </label>
-                        {isUploading && <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>Uploading document...</span>}
+                        {isUploading && (
+                          <span
+                            style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}
+                          >
+                            Uploading document...
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -377,7 +494,8 @@ const ProfilePage: React.FC = () => {
                   </span>
                   <span>
                     <strong>Permanent Residential Address</strong>
-                    {displayValue(student.residential_address)}, {student.residential_city}
+                    {displayValue(student.residential_address)},{' '}
+                    {student.residential_city}
                   </span>
                 </div>
               )}
@@ -391,11 +509,20 @@ const ProfilePage: React.FC = () => {
         {user.role !== 'STUDENT' && (
           <article className="card">
             <h2>Basic Account Details</h2>
-            <p className="text-secondary">Update your display names and email username.</p>
-            <form className="profile-form" onSubmit={handleSubmitProfile(onSubmitProfile)}>
+            <p className="text-secondary">
+              Update your display names and email username.
+            </p>
+            <form
+              className="profile-form"
+              onSubmit={handleSubmitProfile(onSubmitProfile)}
+            >
               <div className="form-group">
                 <label htmlFor="username">Username</label>
-                <input id="username" type="text" {...registerProfile('username', { required: true, minLength: 3 })} />
+                <input
+                  id="username"
+                  type="text"
+                  {...registerProfile('username', { required: true, minLength: 3 })}
+                />
               </div>
               <div className="form-group">
                 <label htmlFor="first_name">First Name</label>
@@ -409,7 +536,11 @@ const ProfilePage: React.FC = () => {
               {profileError && <p className="form-error">{profileError}</p>}
               {profileMessage && <p className="form-success">{profileMessage}</p>}
 
-              <button type="submit" className="btn-primary" disabled={isSubmittingProfile}>
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={isSubmittingProfile}
+              >
                 {isSubmittingProfile ? 'Updating...' : 'Update Account'}
               </button>
             </form>
@@ -418,19 +549,39 @@ const ProfilePage: React.FC = () => {
 
         <article className="card">
           <h2>Change Password</h2>
-          <p className="text-secondary">Keep your account secure with a strong password.</p>
-          <form className="profile-form" onSubmit={handleSubmitPassword(onSubmitPassword)}>
+          <p className="text-secondary">
+            Keep your account secure with a strong password.
+          </p>
+          <form
+            className="profile-form"
+            onSubmit={handleSubmitPassword(onSubmitPassword)}
+          >
             <div className="form-group">
               <label htmlFor="current_password">Current Password</label>
-              <input id="current_password" type="password" {...registerPassword('current_password', { required: true })} />
+              <input
+                id="current_password"
+                type="password"
+                {...registerPassword('current_password', { required: true })}
+              />
             </div>
             <div className="form-group">
               <label htmlFor="new_password">New Password</label>
-              <input id="new_password" type="password" {...registerPassword('new_password', { required: true, minLength: 8 })} />
+              <input
+                id="new_password"
+                type="password"
+                {...registerPassword('new_password', { required: true, minLength: 8 })}
+              />
             </div>
             <div className="form-group">
               <label htmlFor="confirm_password">Confirm New Password</label>
-              <input id="confirm_password" type="password" {...registerPassword('confirm_password', { required: true, minLength: 8 })} />
+              <input
+                id="confirm_password"
+                type="password"
+                {...registerPassword('confirm_password', {
+                  required: true,
+                  minLength: 8,
+                })}
+              />
             </div>
 
             {passwordError && <p className="form-error">{passwordError}</p>}

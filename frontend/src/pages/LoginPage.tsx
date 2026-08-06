@@ -52,7 +52,7 @@ const LoginPage: React.FC = () => {
 
     setValue('email', email);
     setValue('password', password);
-    
+
     // Auto submit
     onSubmit({ email, password });
   };
@@ -93,28 +93,65 @@ const LoginPage: React.FC = () => {
 
           {error && <p className="form-error">{error}</p>}
 
-          <button type="submit" disabled={isSubmitting || isLoading} className="btn-primary login-submit">
+          <button
+            type="submit"
+            disabled={isSubmitting || isLoading}
+            className="btn-primary login-submit"
+          >
             {isSubmitting || isLoading ? 'Signing in...' : 'Sign In'}
           </button>
 
-          <button type="button" className="link-button" style={{ textAlign: 'center', color: 'var(--color-slate-400)', textDecoration: 'none', fontSize: '12px' }} onClick={() => alert('Demo Mode: Use the Quick Demo Access pills below to log in instantly!')}>
+          <button
+            type="button"
+            className="link-button"
+            style={{
+              textAlign: 'center',
+              color: 'var(--color-slate-400)',
+              textDecoration: 'none',
+              fontSize: '12px',
+            }}
+            onClick={() =>
+              alert(
+                'Demo Mode: Use the Quick Demo Access pills below to log in instantly!',
+              )
+            }
+          >
             Forgot your password?
           </button>
         </form>
 
         <div className="login-roles">
           <p>Quick Demo Access</p>
-          <div className="login-roles-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-            <button type="button" className="role-pill" onClick={() => handleQuickLogin('student')}>
+          <div
+            className="login-roles-grid"
+            style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}
+          >
+            <button
+              type="button"
+              className="role-pill"
+              onClick={() => handleQuickLogin('student')}
+            >
               Student
             </button>
-            <button type="button" className="role-pill" onClick={() => handleQuickLogin('volunteer')}>
+            <button
+              type="button"
+              className="role-pill"
+              onClick={() => handleQuickLogin('volunteer')}
+            >
               Volunteer
             </button>
-            <button type="button" className="role-pill" onClick={() => handleQuickLogin('tpo')}>
+            <button
+              type="button"
+              className="role-pill"
+              onClick={() => handleQuickLogin('tpo')}
+            >
               TPO Admin
             </button>
-            <button type="button" className="role-pill" onClick={() => handleQuickLogin('admin')}>
+            <button
+              type="button"
+              className="role-pill"
+              onClick={() => handleQuickLogin('admin')}
+            >
               Super Admin
             </button>
           </div>

@@ -1,284 +1,134 @@
-# CRM Dashboard - Training and Placement Management
+# Placement Cell Dashboard
 
-A comprehensive CRM-style dashboard for managing student training, placement, and event operations with end-to-end lifecycle tracking.
+A training-and-placement management system for a college placement cell: student records, training attendance, placement drives with an eligibility engine, events, and analytics.
 
-## Project Overview
+> **Status: under active rewrite.** The project is being rebuilt phase by phase against a real database and real authentication. Phase 0 (foundations) is complete; the domain modules are being rewritten from Phase 1 onward. Screens not yet reached by a phase still read from a pre-rewrite in-memory store and are not representative. See [`docs/REWRITE_PLAN.md`](docs/REWRITE_PLAN.md) for the full plan and current phase.
 
-This is a full-stack application built with:
-- **Backend**: FastAPI (Python)
-- **Frontend**: React 18 with TypeScript
-- **Database**: SQLite (development), PostgreSQL (production)
-- **Authentication**: JWT tokens
+## Stack
 
-## Quick Start
+| Layer | Choice |
+| --- | --- |
+| Backend | FastAPI, SQLAlchemy 2.0, Alembic, Pydantic v2 |
+| Database | SQLite (local file, seeded with generated demo data) |
+| Frontend | React 19, TypeScript 5, Vite 7, TanStack Query v5 |
+| Tests | pytest (backend), Vitest + Testing Library (frontend) |
 
-### Prerequisites
-- Python 3.9+
-- Node.js 16+
-- npm or yarn
+This is a portfolio build: it runs locally against a SQLite file with fabricated data. No real student records are involved. Hosting is deliberately deferred — see [§10 of the plan](docs/REWRITE_PLAN.md) for what changing that would require.
 
-### Development Setup
+## Prerequisites
 
-#### Backend
+- Python 3.11+ (developed on 3.14)
+- Node.js 20+ (developed on 24)
 
-1. Navigate to backend directory:
-```bash
-cd backend
-```
-
-2. Create and activate virtual environment:
-```bash
-python -m venv venv
-.\venv\Scripts\Activate.ps1  # Windows
-source venv/bin/activate      # Unix/Mac
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Start development server:
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-Backend will be available at: `http://localhost:8000`
-Health check: `http://localhost:8000/health`
-
-#### Frontend
-
-1. Navigate to frontend directory:
-```bash
-cd frontend
-```
-
-2. Copy environment variables:
-```bash
-copy .env.example .env
-```
-
-3. Install dependencies:
-```bash
-npm install
-```
-
-4. Start development server:
-```bash
-npm start
-```
-
-Frontend will be available at: `http://localhost:3000`
-
-### Accessing the Application
-
-1. **Frontend**: http://localhost:3000
-2. **Backend Health**: http://localhost:8000/health
-3. **API Documentation**: http://localhost:8000/api/docs/
-4. **API Schema**: http://localhost:8000/api/schema/
-
-## Project Structure
-
-```
-placement_cell_dashboard/
-├── backend/                    # FastAPI API
-│   ├── app/
-│   │   ├── api/               # Endpoint routers
-│   │   ├── core/              # Core helpers/auth
-│   │   ├── db/                # Data layer (in-memory scaffold)
-│   │   ├── schemas/           # Pydantic schemas
-│   │   └── main.py
-│   ├── requirements.txt
-│   └── README.md
-├── frontend/                  # React SPA
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   ├── context/
-│   │   ├── hooks/
-│   │   ├── App.tsx
-│   │   └── index.tsx
-│   ├── package.json
-│   └── README.md
-├── docs/                      # Documentation
-├── CRM_MIGRATION_MASTER_PLAN.md
-└── README.md
-```
-
-## Core Features
-
-### 1. Student Management
-- Student profile with academic history
-- Document management (resumes, certificates)
-- ATS resume scoring
-- Admission year and cohort tracking
-
-### 2. Placement Operations
-- Post placement opportunities
-- Student applications and eligibility
-- Multi-round management (aptitude, GD, technical, HR)
-- Placement day attendance
-- HR export functionality
-- Conversion funnel analytics
-
-### 3. Training Management
-- Training programs and slot scheduling
-- Student batch segmentation
-- Attendance tracking
-- Test score management
-- Parent notifications
-
-### 4. Event Management
-- Event/seminar announcements
-- Student enrollment
-- Attendance tracking
-
-### 5. Analytics & Reporting
-- Placement funnel analysis
-- Training metrics
-- Attendance reports
-- Conversion rate tracking
-
-## API Documentation
-
-### Authentication
-- Endpoint: `POST /api/v1/auth/login/`
-- Response includes JWT tokens (access + refresh)
-
-### Key Endpoints
-- **Students**: `GET /api/v1/students/`
-- **Placements**: `GET /api/v1/placements/opportunities/`
-- **Training**: `GET /api/v1/training/programs/`
-- **Events**: `GET /api/v1/events/`
-- **Analytics**: `GET /api/v1/analytics/placements/`
-
-Full API documentation available at: `http://localhost:8000/api/docs/`
-
-## Database Schema
-
-Key models:
-- `Student` - Student profile with admission year, entry mode
-- `PlacementOpportunity` - Job opportunities
-- `PlacementApplication` - Student applications
-- `PlacementRound` - Interview rounds
-- `TrainingProgram` - Training sessions
-- `TrainingSlot` - Individual training slots
-- `TrainingAttendance` - Attendance records
-
-See [CRM_MIGRATION_MASTER_PLAN.md](./CRM_MIGRATION_MASTER_PLAN.md) for complete schema details.
-
-## Development Workflow
-
-1. **Create a feature branch**:
-```bash
-git checkout -b feature/your-feature-name
-```
-
-2. **Backend development**:
-   - Schemas in `app/schemas/`
-   - Routers in `app/api/v1/`
-   - Dependencies in `app/api/deps.py`
-   - App bootstrap in `app/main.py`
-
-3. **Frontend development**:
-   - Components in `src/components/`
-   - Pages in `src/pages/`
-   - API calls in `src/services/api.ts`
-
-4. **Run tests**:
-```bash
-# Backend
-pytest
-
-# Frontend
-npm test
-```
-
-5. **Commit and push**:
-```bash
-git commit -m "Feature: description"
-git push origin feature/your-feature-name
-```
-
-## Environment Variables
-
-### Backend (.env)
-```
-API_HOST=0.0.0.0
-API_PORT=8000
-ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
-```
-
-### Frontend (.env)
-```
-REACT_APP_API_URL=http://localhost:8000
-REACT_APP_API_VERSION=v1
-```
-
-## Deployment
-
-### Backend (FastAPI)
-- Replace in-memory storage with a real database
-- Add JWT signing/verification for production
-- Run with production ASGI server settings (Uvicorn/Gunicorn)
-- Configure allowed origins and HTTPS/SSL
-
-### Frontend (React)
-- Run `npm build` to create production build
-- Serve static files from web server (Nginx, Apache)
-- Configure API endpoint for production server
-
-## Testing
+## Setup
 
 ### Backend
+
 ```bash
 cd backend
-pytest
+
+python -m venv .venv
+source .venv/Scripts/activate     # Windows (Git Bash)
+# source .venv/bin/activate       # macOS / Linux
+
+pip install --no-cache-dir -r requirements-dev.txt
 ```
+
+Create the configuration. `SECRET_KEY` and `DATABASE_URL` have **no defaults** — the app refuses to start without them, so it can never boot with a key that is public in the source tree.
+
+```bash
+cp .env.example .env
+python -c "import secrets; print(secrets.token_urlsafe(48))"   # paste into SECRET_KEY
+```
+
+Create and seed the database:
+
+```bash
+python -m scripts.reset_db
+```
+
+Run it:
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+| | |
+| --- | --- |
+| API | http://localhost:8000 |
+| Health | http://localhost:8000/health |
+| API docs | http://localhost:8000/api/docs |
+| OpenAPI schema | http://localhost:8000/api/schema |
 
 ### Frontend
+
 ```bash
 cd frontend
-npm test
+npm install
+npm run dev
 ```
 
-## Common Issues
+Opens at http://localhost:5173. The API URL resolves automatically: `localhost` normally, and the page's own host when opened from another device on the same network (useful for the fast-mark attendance flows on a phone). Override with `VITE_API_URL` in `.env.local` if needed.
 
-### Port Already in Use
-- Backend: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8001`
-- Frontend: `PORT=3001 npm start`
+## Common commands
 
-### CORS Errors
-- Check `ALLOWED_ORIGINS` in backend environment settings
-- Ensure frontend is accessing correct API URL
+### Backend (`cd backend`)
 
-### Database Errors
-- Current backend scaffold uses in-memory data and does not require migrations.
-- For persistence, add a real database layer (SQLAlchemy + Alembic).
+| Command | Purpose |
+| --- | --- |
+| `pytest` | Run tests |
+| `pytest --cov=app --cov-report=term-missing` | Tests with coverage |
+| `ruff check . && ruff format .` | Lint and format |
+| `mypy app scripts` | Type check |
+| `python -m scripts.reset_db` | Drop, migrate, and reseed |
+| `python -m alembic upgrade head` | Apply migrations |
+| `python -m alembic revision --autogenerate -m "..."` | Create a migration |
 
-## Contributing
+### Frontend (`cd frontend`)
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Dev server |
+| `npm test` | Run tests |
+| `npm run typecheck` | Type check |
+| `npm run lint` | Lint |
+| `npm run format` | Format |
+| `npm run build` | Production build to `dist/` |
 
-## License
+## Project layout
 
-Proprietary - All rights reserved
+```
+backend/
+  app/
+    core/          config, database, clock, errors, pagination
+    models/        SQLAlchemy models
+    schemas/       Pydantic request/response contracts
+    repositories/  query objects — the only place select() is written
+    services/      domain logic (eligibility, progression, attendance)
+    api/v1/        HTTP routers
+  alembic/         migrations
+  scripts/         reset_db, seed
+  tests/           unit, integration, api
 
-## Support
+frontend/
+  src/
+    app/           router and providers
+    lib/           API client, query client
+    components/    shared UI and layout
+    features/      per-domain hooks, components, pages
+    pages/         pre-rewrite screens, migrated into features/ by phase
 
-For issues or questions, contact the development team.
+docs/
+  REWRITE_PLAN.md              the plan: architecture, data model, phases
+  CRM_MIGRATION_MASTER_PLAN.md original product/feature reference
+  LEGACY_SYSTEM_NOTES.md       business process notes from the prior system
+```
 
-## Resources
+## Notes for anyone reading the code
 
-- [CRM Migration Master Plan](./CRM_MIGRATION_MASTER_PLAN.md)
-- [Backend README](./backend/README.md)
-- [Frontend README](./frontend/README.md)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [React Documentation](https://react.dev)
-- [Uvicorn Documentation](https://www.uvicorn.org/)
+A few things are deliberate and documented where they appear:
+
+- **SQLite needs explicit setup.** Foreign key enforcement is off by default in SQLite, so `app/core/db.py` applies `PRAGMA foreign_keys=ON` on every connection; without it every foreign key in the schema is decorative. Alembic runs in batch mode because SQLite cannot `ALTER TABLE` drop or alter a column.
+- **The database file is a build artifact.** It is git-ignored and regenerated deterministically by `scripts/seed.py` from a fixed random seed, so the demo dataset is reproducible.
+- **Pre-rewrite modules are exempt from lint and strict typing**, listed explicitly in `backend/pyproject.toml` and `frontend/eslint.config.js`. Each phase removes its files from those lists as it rewrites them, so the exemptions shrink to nothing rather than becoming permanent.
+- **`frontend/src/lib/legacyQuery.ts`** bridges react-query v3's call signature to TanStack Query v5 for pages not yet rewritten. It is temporary; do not add new usages.

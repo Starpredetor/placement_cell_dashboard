@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from 'react-query';
+import { useQuery } from '../lib/legacyQuery';
 
 import { trainingAPI } from '../services/api';
 
@@ -14,13 +14,10 @@ const TrainingSessionCreatePage: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   // Fetch batches to populate dropdown
-  const batchesQuery = useQuery(
-    ['training-batches-list-create-page'],
-    async () => {
-      const response = await trainingAPI.batches();
-      return response.data?.results || [];
-    }
-  );
+  const batchesQuery = useQuery(['training-batches-list-create-page'], async () => {
+    const response = await trainingAPI.batches();
+    return response.data?.results || [];
+  });
 
   const batches = batchesQuery.data || [];
 
@@ -38,7 +35,7 @@ const TrainingSessionCreatePage: React.FC = () => {
         title,
         date,
         session_type: sessionType,
-        batch
+        batch,
       });
       alert(`Session "${title}" created successfully for ${batch}!`);
       navigate('/training');
@@ -54,16 +51,19 @@ const TrainingSessionCreatePage: React.FC = () => {
     <div style={{ display: 'grid', gap: 'var(--space-lg)', justifyItems: 'center' }}>
       <section className="page-header" style={{ width: '100%', maxWidth: '600px' }}>
         <div style={{ width: '100%' }}>
-          <button 
-            type="button" 
-            className="btn-secondary" 
+          <button
+            type="button"
+            className="btn-secondary"
             style={{ marginBottom: '12px', padding: '6px 12px', fontSize: '12.5px' }}
             onClick={() => navigate('/training')}
           >
             ← Back to Training Sessions Board
           </button>
           <h1 style={{ textAlign: 'left' }}>Create Training Session</h1>
-          <p className="text-secondary" style={{ textAlign: 'left' }}>Schedule a new daily training lecture and assign it directly to a division batch.</p>
+          <p className="text-secondary" style={{ textAlign: 'left' }}>
+            Schedule a new daily training lecture and assign it directly to a division
+            batch.
+          </p>
         </div>
       </section>
 
@@ -71,45 +71,65 @@ const TrainingSessionCreatePage: React.FC = () => {
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
           <label className="form-group">
             Session Title
-            <input 
-              type="text" 
-              value={title} 
-              onChange={e => setTitle(e.target.value)} 
-              placeholder="e.g. Syllogisms Bootcamp & Practice" 
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Syllogisms Bootcamp & Practice"
               required
             />
           </label>
 
           <label className="form-group">
             Target Batch
-            <select value={batch} onChange={e => setBatch(e.target.value)} required>
+            <select value={batch} onChange={(e) => setBatch(e.target.value)} required>
               {batches.map((b: any) => (
-                <option key={b.name} value={b.name}>{b.name}</option>
+                <option key={b.name} value={b.name}>
+                  {b.name}
+                </option>
               ))}
             </select>
           </label>
 
           <label className="form-group">
             Schedule Date
-            <input 
-              type="date" 
-              value={date} 
-              onChange={e => setDate(e.target.value)} 
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               required
             />
           </label>
 
           <label className="form-group">
             Session Slot Mode
-            <select value={sessionType} onChange={e => setSessionType(e.target.value as any)} required>
+            <select
+              value={sessionType}
+              onChange={(e) => setSessionType(e.target.value as any)}
+              required
+            >
               <option value="BOTH">Both (Morning & Afternoon)</option>
               <option value="MS">Morning (MS) only</option>
               <option value="AS">Afternoon (AS) only</option>
             </select>
           </label>
 
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
-            <button type="button" className="btn-secondary" onClick={() => navigate('/training')}>Cancel</button>
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end',
+              borderTop: '1px solid var(--color-border)',
+              paddingTop: '16px',
+            }}
+          >
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => navigate('/training')}
+            >
+              Cancel
+            </button>
             <button type="submit" className="btn-success" disabled={saving}>
               {saving ? 'Creating Session...' : 'Create Session'}
             </button>

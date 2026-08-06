@@ -8,15 +8,26 @@ type StudentsServiceNavProps = {
 const StudentsServiceNav: React.FC<StudentsServiceNavProps> = ({ studentId }) => (
   <aside className="service-nav" aria-label="Students module">
     <strong>Students</strong>
-    <NavLink to="/students" end className={({ isActive }) => `service-nav-link ${isActive ? 'is-active' : ''}`}>
+    <NavLink
+      to="/students"
+      end
+      className={({ isActive }) => `service-nav-link ${isActive ? 'is-active' : ''}`}
+    >
       Directory
     </NavLink>
     {studentId ? (
       <>
-        <NavLink to={`/students/${studentId}`} end className={({ isActive }) => `service-nav-link ${isActive ? 'is-active' : ''}`}>
+        <NavLink
+          to={`/students/${studentId}`}
+          end
+          className={({ isActive }) => `service-nav-link ${isActive ? 'is-active' : ''}`}
+        >
           Profile
         </NavLink>
-        <NavLink to={`/students/${studentId}/edit`} className={({ isActive }) => `service-nav-link ${isActive ? 'is-active' : ''}`}>
+        <NavLink
+          to={`/students/${studentId}/edit`}
+          className={({ isActive }) => `service-nav-link ${isActive ? 'is-active' : ''}`}
+        >
           Edit Details
         </NavLink>
       </>
