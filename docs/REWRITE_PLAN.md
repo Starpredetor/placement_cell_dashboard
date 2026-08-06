@@ -520,6 +520,31 @@ The security rewrite. Nothing else can be trusted until this lands.
 
 ---
 
+### Phase 2.5 — Visual identity and design system · 3 units
+
+Inserted after Phase 2a and **before Phase 2b's component kit**. The sequencing is the whole point: Phase 2b builds `components/ui`, which all 17 screens and every later phase consume. Redesigning after that means building the component library twice.
+
+Full specification: [`docs/DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md).
+
+**Why now.** The current palette was inherited from the earlier attendance-only system and does not survive contact with placement drives, rounds, and eligibility. It also contains a structural defect rather than merely a dated look: `--color-accent` and `--color-success` are the same hex (`#0d9488`), so "you can click this" and "this succeeded" are indistinguishable — and `--color-primary` (`#8b1e1e`) sits in the same hue family as `--color-error`, so every primary button competes with the "Absent" chip beside it.
+
+**The direction.** *Colour is reserved for state; the chrome is monochrome.* In a product whose entire job is state — eligible/not, applied→shortlisted→offered→joined, present/absent, draft/published/closed — colour is data, so the interface gives it up everywhere else.
+
+**Work**
+- Replace the `:root` token block: five chrome neutrals plus one accent (`--stamp #24379B`), and a separate reserved state set (`won` / `hold` / `lost` / `open` / `draft`), each with light and dark values.
+- Add the status → token map so no screen picks a colour by hand.
+- Swap Outfit + Inter for **Archivo** + **JetBrains Mono**; mono carries every identifier and figure, with tabular figures for column scanning.
+- Collapse radii to a single 4px; delete `--shadow-glow` and the layered card shadows in favour of hairline rules.
+- Build the two primitives Phase 2b depends on: **`<StateChip>`** (resolves a domain status to its token) and **`<Funnel>`** (the signature element — Applied → Shortlisted → Offered → Joined, segment widths proportional to counts).
+- Fold the existing `.badge-*` classes into `StateChip` so status colour has one source.
+- Verify contrast in both themes and keyboard focus visibility.
+
+**Deliberately unchanged:** the dark rail beside a light workspace, route layout, and information hierarchy. That structure is right for a tool staff operate all day; the distinctiveness comes from colour discipline, the mono data treatment, and the funnel, not from moving the furniture.
+
+**Done when:** no chrome element uses a saturated colour; every status string in the §4 map renders through `StateChip`; the funnel appears on drive cards, the drive workspace header, and the dashboard; both themes pass contrast; and no `.badge-*` class remains.
+
+---
+
 ### Phase 3 — Student profile depth · 5 units
 
 **Backend**
@@ -669,6 +694,7 @@ The phase that turns a working system into something worth showing.
 | 0 | Foundations, SQLite setup, Vite migration, CI | 5 |
 | 1 | Identity, access, demo role switcher | 5 |
 | 2 | Reference data, student core, UI kit | 7 |
+| 2.5 | Visual identity and design system | 3 |
 | 3 | Student profile depth, documents | 5 |
 | 4 | Training operations | 6 |
 | 5 | Placement operations (5A + 5B) | 11 |
@@ -676,11 +702,13 @@ The phase that turns a working system into something worth showing.
 | 7 | Analytics | 5 |
 | 8 | Notifications | 3 |
 | 9 | Demo dataset and polish | 4 |
-| | **Total** | **55** |
+| | **Total** | **58** |
 
 **Ordering constraints.** 0 → 1 → 2 is a strict chain. Phases 3, 4, and 6 are mutually independent once 2 lands. Phase 5 needs 2 and reuses 4's attendance service. Phase 7 needs 4, 5, and 6 for real data. Phases 8 and 9 come last.
 
-**Earliest genuinely usable system:** end of Phase 4 — real accounts, real students, real training attendance, persisted. Phase 5 delivers the placement CRM the project is named for. **Phases 0–5 alone (39 units) make a strong portfolio piece**; 6–9 complete it.
+**Phase 2.5 must precede Phase 2b** — the component kit is built on its tokens and primitives.
+
+**Earliest genuinely usable system:** end of Phase 4 — real accounts, real students, real training attendance, persisted. Phase 5 delivers the placement CRM the project is named for. **Phases 0–5 alone (42 units) make a strong portfolio piece**; 6–9 complete it.
 
 ---
 
