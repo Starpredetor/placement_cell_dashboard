@@ -29,9 +29,88 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
+export type StudentEntryMode = 'REGULAR' | 'LATERAL_DIPLOMA';
+export type StudentGender = 'FEMALE' | 'MALE' | 'OTHER' | 'PREFER_NOT_TO_SAY' | '';
+export type StudentStatus = 'ACTIVE' | 'ALUMNI' | 'EXTENDED' | 'GRADUATED';
+export type BoardType = '12TH' | 'DIPLOMA' | '';
+
+export interface StudentAcademicHistory {
+  tenth_percentage: string | null;
+  tenth_year_of_passing: number | null;
+  tenth_board: string;
+  twelfth_or_diploma_type: BoardType;
+  twelfth_or_diploma_percentage: string | null;
+  twelfth_or_diploma_year_of_passing: number | null;
+  twelfth_board: string;
+  btech_sem1_sgpi: string | null;
+  btech_sem2_sgpi: string | null;
+  btech_sem3_sgpi: string | null;
+  btech_sem4_sgpi: string | null;
+  se_cgpi: string | null;
+  se_percentage: string | null;
+  live_kt: number;
+  dead_kt: number;
+  drop_count: number;
+  gap_count: number;
+  courses_done_text: string;
+  internships_text: string;
+}
+
+export interface StudentCompliance {
+  aadhaar_number: string;
+  pan_number: string;
+}
+
+export interface StudentProfile {
+  id: number;
+  linked_user_id: number | null;
+  full_name: string;
+  email: string;
+  college_roll_no: string;
+  admission_year: number;
+  entry_mode: StudentEntryMode;
+  program_duration_years: number;
+  expected_graduation_year: number;
+  current_academic_year: number | StudentStatus;
+  status: StudentStatus;
+  student_whatsapp_number: string;
+  parent_whatsapp_number: string;
+  parent_email: string;
+  date_of_birth: string | null;
+  gender: StudentGender;
+  nationality: string;
+  residential_address: string;
+  residential_city: string;
+  pin_code: string;
+  native_place: string;
+  current_location: string;
+  branch: string;
+  major_minor_subject: string;
+  division: string;
+  batch: string;
+  is_active: boolean;
+  academic_history?: StudentAcademicHistory | null;
+  compliance?: StudentCompliance | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Resolve dynamic base URL for cross-device mobile support
+const getBaseURL = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  const hostname = window.location.hostname;
+  // If accessing on local network IP (e.g. from a mobile phone), dynamically use the host IP!
+  if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    return `http://${hostname}:8000/api/v1`;
+  }
+  return 'http://localhost:8000/api/v1';
+};
+
 // Create axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api/v1',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -115,11 +194,12 @@ export const authAPI = {
 
 // Students Endpoints
 export const studentsAPI = {
-  list: (page = 1) =>
-    api.get<PaginatedResponse<any>>('/students/', { params: { page } }),
-  detail: (id: number) => api.get(`/students/${id}/`),
-  create: (data: any) => api.post('/students/', data),
-  update: (id: number, data: any) => api.put(`/students/${id}/`, data),
+  list: (page = 1, search = '') =>
+    api.get<PaginatedResponse<StudentProfile>>('/students/', { params: { page, search } }),
+  detail: (id: number) => api.get<StudentProfile>(`/students/${id}/`),
+  me: () => api.get<StudentProfile>('/students/me/'),
+  create: (data: Partial<StudentProfile>) => api.post<StudentProfile>('/students/', data),
+  update: (id: number, data: Partial<StudentProfile>) => api.patch<StudentProfile>(`/students/${id}/`, data),
   delete: (id: number) => api.delete(`/students/${id}/`),
 };
 
@@ -135,20 +215,30 @@ export const placementsAPI = {
     }),
   createApplication: (data: any) =>
     api.post('/placements/applications/', data),
-  updateApplication: (id: number, data: any) =>
-    api.put(`/placements/applications/${id}/`, data),
 };
 
 // Training Endpoints
 export const trainingAPI = {
-  programs: (page = 1) =>
-    api.get<PaginatedResponse<any>>('/training/programs/', { params: { page } }),
-  enrollment: (page = 1) =>
-    api.get<PaginatedResponse<any>>('/training/enrollment/', {
-      params: { page },
-    }),
-  createEnrollment: (data: any) =>
-    api.post('/training/enrollment/', data),
+  programs: () =>
+    api.get<PaginatedResponse<any>>('/training/programs/'),
+  createProgram: (data: any) =>
+    api.post('/training/programs/', data),
+  lectures: (programId?: number) =>
+    api.get<PaginatedResponse<any>>('/training/lectures/', { params: { program_id: programId } }),
+  createLecture: (data: any) =>
+    api.post('/training/lectures/', data),
+  attendance: (lectureId?: number, studentId?: number) =>
+    api.get<PaginatedResponse<any>>('/training/attendance/', { params: { lecture_id: lectureId, student_id: studentId } }),
+  markAttendance: (data: { lecture_id: number; student_id: number; status: string }) =>
+    api.post('/training/attendance/mark/', data),
+  batches: () =>
+    api.get<PaginatedResponse<any>>('/training/batches/'),
+  createBatch: (data: { name: string; is_active?: boolean }) =>
+    api.post('/training/batches/', data),
+  rollover: () =>
+    api.post('/training/rollover/'),
+  markAttendanceByRoll: (data: { lecture_id: number; college_roll_no: string; status: string }) =>
+    api.post<any>('/training/attendance/mark-by-roll/', data),
 };
 
 // Events Endpoints

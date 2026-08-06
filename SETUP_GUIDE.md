@@ -58,56 +58,25 @@ cp .env.example .env    # Mac/Linux
 
 Edit `.env` and configure:
 ```env
-DEBUG=True
-SECRET_KEY=your-secret-key-here
-ALLOWED_HOSTS=localhost,127.0.0.1
-DB_ENGINE=django.db.backends.sqlite3
-DB_NAME=db.sqlite3
+API_HOST=0.0.0.0
+API_PORT=8000
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
-### 4. Database Setup
-
-Run migrations:
+### 4. Run Development Server
 ```bash
-python manage.py migrate
-```
-
-### 5. Create Superuser (Admin Account)
-```bash
-python manage.py createsuperuser
-```
-
-Follow prompts to create admin account.
-
-### 6. Run Development Server
-```bash
-python manage.py runserver
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Server starts at: `http://localhost:8000`
 
 ### Useful Backend Commands
 ```bash
-# Run migrations
-python manage.py migrate
-
-# Create migrations for model changes
-python manage.py makemigrations
-
 # Run tests
-python manage.py test
+pytest
 
-# Create superuser
-python manage.py createsuperuser
-
-# Access Django shell
-python manage.py shell
-
-# Collect static files
-python manage.py collectstatic
-
-# Access admin panel
-# Visit: http://localhost:8000/admin
+# Start API server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ## Frontend Setup
@@ -162,7 +131,7 @@ npm eject
 ```bash
 cd backend
 .\venv\Scripts\Activate.ps1  # Windows
-python manage.py runserver
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Terminal 2 - Frontend:**
@@ -173,13 +142,14 @@ npm start
 
 ### Access Application
 - Frontend: `http://localhost:3000`
-- Backend Admin: `http://localhost:8000/admin`
+- Backend Health: `http://localhost:8000/health`
 - API Documentation: `http://localhost:8000/api/docs`
 - API Schema: `http://localhost:8000/api/schema`
 
-### Default Credentials
-- Username: admin
-- Password: (as set during superuser creation)
+### Default Credentials (Scaffold)
+- `admin@college.edu / admin1234`
+- `student@college.edu / student1234`
+- `tpo@college.edu / tpo12345`
 
 ## Docker Deployment
 
@@ -195,11 +165,8 @@ docker-compose build
 # Start services
 docker-compose up -d
 
-# Run migrations
-docker-compose exec backend python manage.py migrate
-
-# Create superuser
-docker-compose exec backend python manage.py createsuperuser
+# The existing compose file is Django-based and should be updated
+# before running FastAPI in containers.
 ```
 
 ### Access Services
@@ -216,8 +183,8 @@ docker-compose down
 # View logs
 docker-compose logs -f [service-name]
 
-# Run Django commands
-docker-compose exec backend python manage.py [command]
+# Run backend shell
+docker-compose exec backend sh
 
 # Open shell in container
 docker-compose exec backend bash
@@ -227,27 +194,20 @@ docker-compose exec backend bash
 
 ### Backend Development
 
-1. **Create Models**
-   - Define data models in `apps/*/models.py`
-   - Create migrations: `python manage.py makemigrations`
-   - Apply migrations: `python manage.py migrate`
+1. **Create Schemas**
+   - Define request/response schemas in `app/schemas/`
 
-2. **Create Serializers**
-   - Define API serializers in `apps/*/serializers.py`
-   - Handle data validation and transformation
+2. **Create Routers**
+   - Implement endpoints in `app/api/v1/*.py`
+   - Register routers in `app/api/router.py`
 
-3. **Create Views/ViewSets**
-   - Implement API views in `apps/*/views.py`
-   - Register viewsets in routers
-   - Add permissions and filters
+3. **Add Auth/Dependencies**
+   - Use dependencies from `app/api/deps.py`
+   - Enforce role checks per module
 
-4. **Create URLs**
-   - Register URL patterns in `apps/*/urls.py`
-   - Add to main `crm_dashboard/urls.py`
-
-5. **Test APIs**
+4. **Test APIs**
    - Use API documentation: `http://localhost:8000/api/docs`
-   - Create test cases in `apps/*/tests.py`
+   - Create test cases in `tests/`
 
 ### Frontend Development
 
@@ -280,15 +240,12 @@ docker-compose exec backend bash
 
 **Port 8000 Already in Use:**
 ```bash
-python manage.py runserver 8001
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 ```
 
 **Database Errors:**
-```bash
-# Reset database (dev only!)
-rm db.sqlite3
-python manage.py migrate
-```
+- The scaffold backend uses in-memory data; restart the server to reset seed state.
+- For persistent storage, add SQLAlchemy models and Alembic migrations.
 
 **Module Import Errors:**
 ```bash
@@ -340,19 +297,13 @@ curl http://localhost:3000
 ```
 placement_cell_dashboard/
 ├── backend/
-│   ├── accounts/          # User management
-│   ├── analytics/         # Analytics
-│   ├── common/           # Shared utilities
-│   ├── communications/   # Notifications
-│   ├── crm_dashboard/    # Settings
-│   ├── events/           # Events
-│   ├── placement/        # Placement
-│   ├── students/         # Students
-│   ├── training/         # Training
-│   ├── manage.py
+│   ├── app/
+│   │   ├── api/          # FastAPI routers/dependencies
+│   │   ├── core/         # Core auth utilities
+│   │   ├── db/           # In-memory data store
+│   │   └── schemas/      # Pydantic schemas
 │   ├── requirements.txt
 │   ├── .env.example
-│   ├── Dockerfile
 │   └── README.md
 ├── frontend/
 │   ├── src/
@@ -379,9 +330,9 @@ placement_cell_dashboard/
 - [CRM Migration Master Plan](../CRM_MIGRATION_MASTER_PLAN.md)
 - [Backend README](../backend/README.md)
 - [Frontend README](../frontend/README.md)
-- [Django Documentation](https://docs.djangoproject.com/)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [React Documentation](https://react.dev)
-- [Django REST Framework](https://www.django-rest-framework.org/)
+- [Uvicorn Documentation](https://www.uvicorn.org/)
 
 ## Support
 

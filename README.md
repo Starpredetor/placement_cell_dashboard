@@ -5,7 +5,7 @@ A comprehensive CRM-style dashboard for managing student training, placement, an
 ## Project Overview
 
 This is a full-stack application built with:
-- **Backend**: Django REST Framework (Python)
+- **Backend**: FastAPI (Python)
 - **Frontend**: React 18 with TypeScript
 - **Database**: SQLite (development), PostgreSQL (production)
 - **Authentication**: JWT tokens
@@ -38,23 +38,13 @@ source venv/bin/activate      # Unix/Mac
 pip install -r requirements.txt
 ```
 
-4. Run migrations:
+4. Start development server:
 ```bash
-python manage.py migrate
-```
-
-5. Create superuser (admin account):
-```bash
-python manage.py createsuperuser
-```
-
-6. Start development server:
-```bash
-python manage.py runserver
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Backend will be available at: `http://localhost:8000`
-Admin panel: `http://localhost:8000/admin`
+Health check: `http://localhost:8000/health`
 
 #### Frontend
 
@@ -83,7 +73,7 @@ Frontend will be available at: `http://localhost:3000`
 ### Accessing the Application
 
 1. **Frontend**: http://localhost:3000
-2. **Backend Admin**: http://localhost:8000/admin
+2. **Backend Health**: http://localhost:8000/health
 3. **API Documentation**: http://localhost:8000/api/docs/
 4. **API Schema**: http://localhost:8000/api/schema/
 
@@ -91,17 +81,13 @@ Frontend will be available at: `http://localhost:3000`
 
 ```
 placement_cell_dashboard/
-├── backend/                    # Django REST Framework API
-│   ├── accounts/              # User authentication
-│   ├── analytics/             # Analytics and reporting
-│   ├── common/                # Shared models
-│   ├── communications/        # Notifications
-│   ├── crm_dashboard/         # Main settings
-│   ├── events/                # Events management
-│   ├── placement/             # Placement operations
-│   ├── students/              # Student profiles
-│   ├── training/              # Training management
-│   ├── manage.py
+├── backend/                    # FastAPI API
+│   ├── app/
+│   │   ├── api/               # Endpoint routers
+│   │   ├── core/              # Core helpers/auth
+│   │   ├── db/                # Data layer (in-memory scaffold)
+│   │   ├── schemas/           # Pydantic schemas
+│   │   └── main.py
 │   ├── requirements.txt
 │   └── README.md
 ├── frontend/                  # React SPA
@@ -191,10 +177,10 @@ git checkout -b feature/your-feature-name
 ```
 
 2. **Backend development**:
-   - Models in `apps/*/models.py`
-   - Serializers in `apps/*/serializers.py`
-   - Views in `apps/*/views.py`
-   - URLs in `apps/*/urls.py`
+   - Schemas in `app/schemas/`
+   - Routers in `app/api/v1/`
+   - Dependencies in `app/api/deps.py`
+   - App bootstrap in `app/main.py`
 
 3. **Frontend development**:
    - Components in `src/components/`
@@ -204,7 +190,7 @@ git checkout -b feature/your-feature-name
 4. **Run tests**:
 ```bash
 # Backend
-python manage.py test
+pytest
 
 # Frontend
 npm test
@@ -220,11 +206,9 @@ git push origin feature/your-feature-name
 
 ### Backend (.env)
 ```
-DEBUG=True
-SECRET_KEY=your-secret-key
-ALLOWED_HOSTS=localhost,127.0.0.1
-DB_ENGINE=django.db.backends.sqlite3
-DB_NAME=db.sqlite3
+API_HOST=0.0.0.0
+API_PORT=8000
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
 ### Frontend (.env)
@@ -235,12 +219,11 @@ REACT_APP_API_VERSION=v1
 
 ## Deployment
 
-### Backend (Django)
-- Configure PostgreSQL database
-- Set `DEBUG=False`
-- Use production WSGI server (Gunicorn)
-- Configure ALLOWED_HOSTS
-- Enable HTTPS/SSL
+### Backend (FastAPI)
+- Replace in-memory storage with a real database
+- Add JWT signing/verification for production
+- Run with production ASGI server settings (Uvicorn/Gunicorn)
+- Configure allowed origins and HTTPS/SSL
 
 ### Frontend (React)
 - Run `npm build` to create production build
@@ -252,7 +235,7 @@ REACT_APP_API_VERSION=v1
 ### Backend
 ```bash
 cd backend
-python manage.py test
+pytest
 ```
 
 ### Frontend
@@ -264,16 +247,16 @@ npm test
 ## Common Issues
 
 ### Port Already in Use
-- Backend: `python manage.py runserver 8001`
+- Backend: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8001`
 - Frontend: `PORT=3001 npm start`
 
 ### CORS Errors
-- Check CORS_ALLOWED_ORIGINS in backend settings
+- Check `ALLOWED_ORIGINS` in backend environment settings
 - Ensure frontend is accessing correct API URL
 
 ### Database Errors
-- Reset database: `python manage.py migrate --reset`
-- Create migrations: `python manage.py makemigrations`
+- Current backend scaffold uses in-memory data and does not require migrations.
+- For persistence, add a real database layer (SQLAlchemy + Alembic).
 
 ## Contributing
 
@@ -296,6 +279,6 @@ For issues or questions, contact the development team.
 - [CRM Migration Master Plan](./CRM_MIGRATION_MASTER_PLAN.md)
 - [Backend README](./backend/README.md)
 - [Frontend README](./frontend/README.md)
-- [Django Documentation](https://docs.djangoproject.com/)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [React Documentation](https://react.dev)
-- [DRF Documentation](https://www.django-rest-framework.org/)
+- [Uvicorn Documentation](https://www.uvicorn.org/)

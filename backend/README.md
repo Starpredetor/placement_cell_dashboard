@@ -1,6 +1,6 @@
 # CRM Dashboard Backend
 
-Django REST Framework based backend for the CRM Dashboard.
+FastAPI backend scaffold for the CRM Dashboard.
 
 ## Setup Instructions
 
@@ -16,123 +16,74 @@ source venv/bin/activate      # Unix/Mac
 pip install -r requirements.txt
 ```
 
-### 3. Run Migrations
+### 3. Run Development Server
 ```bash
-python manage.py migrate
-```
-
-### 4. Create Superuser
-```bash
-python manage.py createsuperuser
-```
-
-### 5. Run Development Server
-```bash
-python manage.py runserver
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Server will be available at: `http://localhost:8000`
-Admin panel: `http://localhost:8000/admin`
-API Docs: `http://localhost:8000/api/docs`
+API docs: `http://localhost:8000/api/docs`
+OpenAPI schema: `http://localhost:8000/api/schema`
 
 ## Project Structure
 
 ```
 backend/
-├── accounts/          # User authentication and profiles
-├── analytics/         # Analytics and reporting
-├── common/           # Shared models and utilities
-├── communications/   # Email/SMS/WhatsApp services
-├── crm_dashboard/    # Main project settings
-├── events/           # Events and seminars
-├── placement/        # Placement operations
-├── students/         # Student profiles and records
-├── training/         # Training activities
-├── manage.py         # Django management script
-└── requirements.txt  # Python dependencies
+├── app/
+│   ├── api/
+│   │   ├── deps.py
+│   │   ├── router.py
+│   │   └── v1/
+│   │       ├── auth.py
+│   │       ├── students.py
+│   │       ├── placements.py
+│   │       ├── training.py
+│   │       ├── events.py
+│   │       ├── communications.py
+│   │       ├── analytics.py
+│   │       └── common.py
+│   ├── core/
+│   │   └── auth.py
+│   ├── db/
+│   │   └── fake_db.py
+│   ├── schemas/
+│   │   ├── auth.py
+│   │   ├── students.py
+│   │   ├── common.py
+│   │   └── generic.py
+│   └── main.py
+├── .env.example
+├── requirements.txt
+└── README.md
 ```
 
-## API Documentation
+## Current Scope
 
-### Available Endpoints
+- In-memory data store for users and students
+- Token-based auth flow for frontend integration
+- Endpoints mirrored from the existing frontend service layer
+- DRF-style paginated payload shape where frontend expects it
 
-- **Auth**: `/api/v1/auth/`
-- **Students**: `/api/v1/students/`
-- **Placements**: `/api/v1/placements/`
-- **Training**: `/api/v1/training/`
-- **Events**: `/api/v1/events/`
-- **Communications**: `/api/v1/communications/`
-- **Analytics**: `/api/v1/analytics/`
-- **Common**: `/api/v1/common/`
+## API Endpoints
 
-### Interactive API Documentation
-- Swagger UI: `/api/docs/`
-- ReDoc: `/api/redoc/`
+- Auth: `/api/v1/auth/`
+- Students: `/api/v1/students/`
+- Placements: `/api/v1/placements/`
+- Training: `/api/v1/training/`
+- Events: `/api/v1/events/`
+- Communications: `/api/v1/communications/`
+- Analytics: `/api/v1/analytics/`
+- Common: `/api/v1/common/`
 
-## Configuration
+## Default Demo Accounts
 
-Edit `.env` file to configure:
-- Database connection
-- CORS settings
-- Redis/Celery settings
-- Secret key and debug mode
-
-## Database Models
-
-Currently configured to use SQLite for development. For production, configure PostgreSQL in settings.py.
-
-## Apps Overview
-
-### accounts
-- User registration and authentication
-- User profiles with role-based access control
-- Login attempt tracking
-
-### students
-- Student profile management
-- Academic history tracking
-- Document management
-- Resume ATS scoring
-
-### placement
-- Placement opportunities
-- Student applications
-- Multi-round management
-- Placement analytics
-
-### training
-- Training programs and slots
-- Student registration
-- Attendance tracking
-- Test score management
-
-### events
-- Event/seminar management
-- Student enrollment
-- Event attendance tracking
-
-### communications
-- Email notifications
-- SMS/WhatsApp alerts
-- Notification templates
-
-### analytics
-- Placement analytics
-- Training analytics
-- Attendance reports
-
-## Development Notes
-
-- All endpoints require authentication (except register/login)
-- API uses JWT tokens for authentication
-- Pagination is enabled with 20 items per page
-- Filtering and searching available on list endpoints
+- admin@college.edu / admin1234
+- student@college.edu / student1234
+- tpo@college.edu / tpo12345
 
 ## Next Steps
 
-1. Implement models for each app
-2. Create serializers for API responses
-3. Create viewsets and API views
-4. Add proper permissions and authentication
-5. Create migration files
-6. Set up Celery tasks for async operations
+1. Replace in-memory store with SQLAlchemy models and Alembic migrations.
+2. Replace mock tokens with proper JWT issuance and refresh.
+3. Add role-based authorization checks per endpoint.
+4. Add tests for auth, students CRUD, and pagination behavior.

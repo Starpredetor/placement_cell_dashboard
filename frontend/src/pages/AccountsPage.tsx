@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from 'react-query';
 
 import { useAuth } from '../context/AuthContext';
-import { authAPI, AuthUser } from '../services/api';
+import { authAPI, AuthUser, trainingAPI } from '../services/api';
 
 const roleLabels: Record<AuthUser['role'], string> = {
   SUPER_ADMIN: 'Super Admin (Django Default)',
@@ -35,6 +35,11 @@ const AccountsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState<string>('');
   const [editState, setEditState] = React.useState<Record<number, EditState>>({});
 
+  // Batch & Rollover states
+  const [newBatchName, setNewBatchName] = React.useState('');
+  const [showAddBatch, setShowAddBatch] = React.useState(false);
+  const [rolloverStatus, setRolloverStatus] = React.useState('');
+
   const canManageUsers = user?.role === 'SUPER_ADMIN' || user?.role === 'TPO' || user?.role === 'HOD';
 
   const usersQuery = useQuery(
@@ -45,6 +50,17 @@ const AccountsPage: React.FC = () => {
     },
     { enabled: canManageUsers }
   );
+
+  const batchesQuery = useQuery(
+    ['training-batches-list'],
+    async () => {
+      const response = await trainingAPI.batches();
+      return response.data?.results || [];
+    },
+    { enabled: canManageUsers }
+  );
+
+  const batches = batchesQuery.data || [];
 
   React.useEffect(() => {
     if (!usersQuery.data) {
@@ -134,6 +150,44 @@ const AccountsPage: React.FC = () => {
       setError(firstError);
     } finally {
       setSavingId(null);
+    }
+  };
+
+  const handleCreateBatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBatchName.trim()) {
+      alert('Please enter a batch name.');
+      return;
+    }
+
+    setMessage('');
+    setError('');
+    try {
+      await trainingAPI.createBatch({
+        name: newBatchName.trim(),
+        is_active: true
+      });
+      batchesQuery.refetch();
+      setNewBatchName('');
+      setShowAddBatch(false);
+      setMessage('Batch created successfully.');
+    } catch {
+      setError('Unable to create batch.');
+    }
+  };
+
+  const handleRollover = async () => {
+    if (!window.confirm("Are you sure you want to execute the Academic Year Rollover?\n\nThis will:\n1. Graduate current 4th-year students (moved to ALUMNI/GRADUATED).\n2. Promote 3rd-year students to 4th-year (placement only, no training).\n3. Promote 2nd-year students to 3rd-year (active for both placements & training sessions).\n\nThis action is irreversible.")) return;
+
+    setMessage('');
+    setError('');
+    try {
+      const response = await trainingAPI.rollover();
+      const data = response.data;
+      setRolloverStatus(`Success! Archived: ${data.archived_count} | 4th-years: ${data.promoted_to_4th_placement_only} | 3rd-years: ${data.promoted_to_3rd_training_and_placement}`);
+      setMessage('Academic Year Rollover completed successfully!');
+    } catch {
+      setError('Unable to run academic rollover.');
     }
   };
 
@@ -252,6 +306,72 @@ const AccountsPage: React.FC = () => {
           </div>
         )}
       </section>
+
+      {canManageUsers && (
+        <section className="card" style={{ marginTop: '2rem', borderTop: '4px solid var(--color-primary)' }}>
+          <h2>High Security Data Operations</h2>
+          <p className="text-secondary" style={{ fontSize: '13px', marginBottom: '20px' }}>
+            Warning: These operations transform essential cohort data. Access is restricted to SUPER_ADMIN and TPO Roles only.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            
+            {/* Create Batch Card */}
+            <div style={{ border: '1px solid var(--color-border)', padding: '16px', borderRadius: '6px', display: 'grid', gap: '12px' }}>
+              <h4>Academic Cohort Batches</h4>
+              <p className="text-secondary" style={{ fontSize: '12.5px', margin: 0 }}>
+                Define a new student cohort batch. Newly created programs and lectures can be targeted to specific cohorts.
+              </p>
+              
+              <div style={{ fontSize: '13px', fontWeight: 'bold' }}>
+                Active Batches: {batches.map((b: any) => b.name).join(', ') || 'None loaded'}
+              </div>
+
+              {showAddBatch ? (
+                <form onSubmit={handleCreateBatch} style={{ display: 'grid', gap: '10px' }}>
+                  <input
+                    type="text"
+                    placeholder="Batch Name, e.g. Batch 2026"
+                    value={newBatchName}
+                    onChange={(e) => setNewBatchName(e.target.value)}
+                    style={{ padding: '8px', fontSize: '13px' }}
+                  />
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                    <button type="button" className="btn-secondary" onClick={() => setShowAddBatch(false)}>Cancel</button>
+                    <button type="submit" className="btn-success">Save</button>
+                  </div>
+                </form>
+              ) : (
+                <button type="button" className="btn-secondary" style={{ justifySelf: 'start' }} onClick={() => setShowAddBatch(true)}>
+                  Create New Cohort Batch
+                </button>
+              )}
+            </div>
+
+            {/* Academic Rollover Card */}
+            <div style={{ border: '1px solid var(--color-border)', padding: '16px', borderRadius: '6px', display: 'grid', gap: '12px' }}>
+              <h4>Academic Year Rollover Promotion</h4>
+              <p className="text-secondary" style={{ fontSize: '12.5px', margin: 0 }}>
+                Executes end-of-year roster rollover. Promotes 3rd-years to 4th-years, 2nd-years to 3rd-years, and moves graduating students to historical alumni archives.
+              </p>
+              {rolloverStatus && (
+                <div style={{ padding: '8px', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', fontSize: '12px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                  {rolloverStatus}
+                </div>
+              )}
+              <button 
+                type="button" 
+                className="btn-primary" 
+                style={{ justifySelf: 'start', backgroundColor: 'var(--color-primary)' }} 
+                onClick={handleRollover}
+              >
+                Execute Academic Year Rollover
+              </button>
+            </div>
+
+          </div>
+        </section>
+      )}
     </main>
   );
 };

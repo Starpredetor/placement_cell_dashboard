@@ -7,7 +7,7 @@
 ```bash
 cd backend
 .\venv\Scripts\Activate.ps1
-python manage.py runserver
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Result**: Backend running at `http://localhost:8000`
@@ -28,21 +28,19 @@ npm start
 | Service | URL | Purpose |
 |---------|-----|---------|
 | Frontend | http://localhost:3000 | Main application |
-| Backend Admin | http://localhost:8000/admin | Django admin panel |
+| Backend Health | http://localhost:8000/health | API status endpoint |
 | API Docs | http://localhost:8000/api/docs | Swagger documentation |
 | API Schema | http://localhost:8000/api/schema | OpenAPI schema |
 
 ---
 
-## 🔑 Default Admin Credentials
+## 🔑 Default Demo Credentials
 
-**Create superuser first:**
-```bash
-cd backend
-python manage.py createsuperuser
-```
+The FastAPI scaffold ships with in-memory demo users:
 
-Follow the prompts to set username and password.
+- `admin@college.edu / admin1234`
+- `student@college.edu / student1234`
+- `tpo@college.edu / tpo12345`
 
 ---
 
@@ -50,15 +48,12 @@ Follow the prompts to set username and password.
 
 ```
 placement_cell_dashboard/
-├── backend/              # Django REST Framework
-│   ├── accounts/        # User authentication
-│   ├── students/        # Student management
-│   ├── placement/       # Placement module
-│   ├── training/        # Training module
-│   ├── events/          # Events module
-│   ├── communications/  # Notifications
-│   ├── analytics/       # Analytics
-│   └── common/          # Shared utilities
+├── backend/              # FastAPI
+│   ├── app/
+│   │   ├── api/v1/      # Endpoint routers
+│   │   ├── db/          # In-memory data store
+│   │   └── schemas/     # Pydantic schemas
+│   └── requirements.txt
 ├── frontend/            # React SPA
 │   ├── src/
 │   │   ├── components/
@@ -78,22 +73,10 @@ placement_cell_dashboard/
 ```bash
 # Start development server
 cd backend
-python manage.py runserver
-
-# Create migrations for model changes
-python manage.py makemigrations
-
-# Apply migrations to database
-python manage.py migrate
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Run tests
-python manage.py test
-
-# Access Django shell
-python manage.py shell
-
-# Create admin user
-python manage.py createsuperuser
+pytest
 ```
 
 ### Frontend
@@ -123,12 +106,10 @@ npm install <package-name>
    ```
 
 2. **Backend Development**
-   - Edit models in `apps/*/models.py`
-   - Create migrations: `python manage.py makemigrations`
-   - Apply migrations: `python manage.py migrate`
-   - Create serializers in `apps/*/serializers.py`
-   - Create views in `apps/*/views.py`
-   - Configure URLs in `apps/*/urls.py`
+   - Define schemas in `app/schemas/`
+   - Add endpoints in `app/api/v1/`
+   - Add route dependencies in `app/api/deps.py`
+   - Register routers in `app/api/router.py`
 
 3. **Frontend Development**
    - Create components in `src/components/`
@@ -150,7 +131,7 @@ npm install <package-name>
 
 **Port 8000 already in use:**
 ```bash
-python manage.py runserver 8001
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 ```
 
 **Import errors after adding packages:**
@@ -158,11 +139,9 @@ python manage.py runserver 8001
 pip install -r requirements.txt --force-reinstall
 ```
 
-**Database errors:**
+**Backend import errors after adding packages:**
 ```bash
-# Reset (development only)
-rm backend/db.sqlite3
-python manage.py migrate
+pip install -r requirements.txt --force-reinstall
 ```
 
 ### Frontend Issues
@@ -197,7 +176,7 @@ npm install
 
 ## ✅ What's Ready
 
-- ✅ Django project with 8 apps
+- ✅ FastAPI scaffold with versioned routers
 - ✅ React frontend with routing
 - ✅ API layer with JWT authentication
 - ✅ Database with SQLite (dev) / PostgreSQL ready
@@ -215,17 +194,17 @@ npm install
    - Review [CRM_MIGRATION_MASTER_PLAN.md](./CRM_MIGRATION_MASTER_PLAN.md)
 
 2. **Start the app**
-   - Run backend: `python manage.py runserver`
+   - Run backend: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
    - Run frontend: `npm start`
 
 3. **Create first model**
-   - Define model in an app's `models.py`
-   - Run `makemigrations` and `migrate`
+   - Define schema in `app/schemas/`
+   - Persist data in a real DB layer (next step)
 
 4. **Create first API**
-   - Create serializer
-   - Create viewset
-   - Register in URLs
+   - Create a router module
+   - Add input/output schema
+   - Register router in `app/api/router.py`
    - Test with Swagger at `/api/docs/`
 
 5. **Build first page**
@@ -238,12 +217,11 @@ npm install
 
 ## 💡 Tips
 
-- Use Django admin panel (`/admin/`) for quick data management
 - Use Swagger API docs (`/api/docs/`) to test endpoints
-- Keep models simple, business logic in serializers/views
+- Keep schemas simple and move business logic into services/dependencies
 - Use React Query for data fetching
 - Use TailwindCSS for styling
 
 ---
 
-**Ready to build? Start with `python manage.py runserver` and `npm start`!** 🚀
+**Ready to build? Start with `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000` and `npm start`!** 🚀
